@@ -1,39 +1,42 @@
 from telegram import Update
 from telegram.ext import CallbackContext
 
-from commands.utils import add_user, remove_user, update_id_list
-
-from psycopg2.errors import UniqueViolation
-
-
-from utils.db import conn, select_users_by_role, insert_user, insert_to_blacklist, remove_from_blacklist
+from utils.db import (
+    check_in_blacklist,
+    conn,
+    insert_to_blacklist,
+    insert_user,
+    remove_from_blacklist,
+    select_users_by_role,
+)
 
 
 def append_user_blacklist(update: Update, context: CallbackContext) -> None:
 
     update_dict = update.to_dict()
+    # print(update_dict)
     message = update_dict['message']
-
-    admins = select_users_by_role(conn, 'superadmin')
-    superadmins = select_users_by_role(conn, 'admin')
-
-    permissions_list = [*admins, *superadmins]
-
-    permissions_ids = [user['id'] for user in permissions_list]
-
     text = message['text']
     text_array = text.split()
+
     user_id = text_array[1]
-
-    from_id = message['from']['id']
-
     url = ''
     if len(text_array) > 1:
         url = text_array[2]
 
+    admins = [int(user['id'])
+              for user in select_users_by_role(conn, 'superadmin')]
+    superadmins = [int(user['id'])
+                   for user in select_users_by_role(conn, 'admin')]
+
+    permissions_list = [*admins, *superadmins]
+    print(permissions_list)
+
+    from_id = message['from']['id']
+
     # user_text = f'{user_id} {url}'
 
-    if from_id in permissions_ids:
+    if from_id in permissions_list:
 
         if from_id in superadmins:
             result = insert_to_blacklist(conn, user_id, url, 'superadmin')
@@ -46,7 +49,7 @@ def append_user_blacklist(update: Update, context: CallbackContext) -> None:
             update.message.reply_text(
                 'Пользователь уже находился в черном списке, ссылка пользователя обновлена в базе данных!')
 
-    elif from_id not in permissions_ids:
+    elif from_id not in permissions_list:
         update.message.reply_text(f'У вас недостаточно прав!')
 
 
@@ -54,74 +57,48 @@ def remove_user_blacklist(update: Update, context: CallbackContext) -> None:
 
     update_dict = update.to_dict()
     message = update_dict['message']
+    text = message['text']
+    text_array = text.split()
+
+    user_id = text_array[1]
+    url = ''
+    if len(text_array) > 1:
+        url = text_array[1]
 
     admins = select_users_by_role(conn, 'superadmin')
     superadmins = select_users_by_role(conn, 'admin')
 
     permissions_list = [*admins, *superadmins]
-
     permissions_ids = [user['id'] for user in permissions_list]
 
-    text = message['text']
-    text_array = text.split()
-    user_id = text_array[1]
-
     from_id = message['from']['id']
-
-    url = ''
-    if len(text_array) > 1:
-        url = text_array[2]
 
     # user_text = f'{user_id} {url}'
 
     if from_id in permissions_ids:
 
-        if from_id in superadmins:
-            result = remove_from_blacklist(conn, user_id,)
-        else:
-            result = insert_to_blacklist(conn, user_id, url, 'admin')
+        added_by = check_in_blacklist(conn, user_id)['added_by']
 
-        if result:
-            update.message.reply_text('Пользователь добавлен в черный список!')
-        else:
-            update.message.reply_text(
-                'Пользователь уже находился в черном списке, ссылка пользователя обновлена в базе данных!')
-
-    elif from_id not in permissions_ids:
-        update.message.reply_text(f'У вас недостаточно прав!')
+        if added_by == 'superadmins' and from_id in superadmins:
+            result = remove_from_blacklist(conn, user_id)
+            update.message.reply_text('Пользователь удален из черного списка!')
+        elif added_by == 'admins' and from_id in permissions_ids:
+            result = remove_from_blacklist(conn, user_id)
+            update.message.reply_text('Пользователь удален из черного списка!')
+        elif added_by == 'superadmins' and from_id not in superadmins:
+            update.message.reply_text('У вас недостаточно прав!')
 
 
-# def remove_user_blacklist(update: Update, context: CallbackContext) -> None:
-#     global blacklist, admins, superusers, blacklist_ids
+def check_user_blacklist(update: Update, context: CallbackContext) -> None:
 
-#     update_dict = update.to_dict()
-#     from_id = update_dict['message']['from']['id']
+    update_dict = update.to_dict()
+    message = update_dict['message']
+    text = message['text']
+    text_array = text.split()
 
-#     # permission_list = [*]
-#     if str(from_id) in superusers:
-#         text = update_dict['message']['text']
-#         user_id = text.split()[1]
+    user_id = text_array[1]
 
-#         if user_id in blacklist_ids:
-#             blacklist = remove_user(blacklist, BLACKLIST_FILE, user_id)
-#             blacklist_ids = update_id_list(lines_blacklist)
-#             update.message.reply_text('Пользователь удален из черного списка!')
-#         else:
-#             update.message.reply_text(
-#                 f'Пользователь {user_id} не в черном списке!')
-
-
-# def check_user_blacklist(update: Update, context: CallbackContext) -> None:
-#     global blacklist
-
-#     update_dict = update.to_dict()
-
-#     text = update_dict['message']['text']
-#     user_id = text.split()[1]
-
-#     if user_id in blacklist_ids:
-#         update.message.reply_text(
-#             f'Пользователь {user_id} находится в черном списке!')
-#     else:
-#         update.message.reply_text(
-#             f'Пользователь {user_id} не в черном списке!')
+    if check_in_blacklist(conn, user_id):
+        update.message.reply_text('Пользователь в черном списке!')
+    else:
+        update.message.reply_text('Пользователя нет в черном списке!')

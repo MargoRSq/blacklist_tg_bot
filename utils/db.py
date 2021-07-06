@@ -1,7 +1,7 @@
 import psycopg2
 
 from psycopg2.extras import DictCursor
-from config import DB_NAME, DB_PASSWORD, DB_USER
+from utils.config import DB_NAME, DB_PASSWORD, DB_USER
 
 from psycopg2.errors import UniqueViolation
 
@@ -30,12 +30,19 @@ def insert_user(conn, user, role, url):
 
 def check_in_blacklist(conn, user):
     with conn.cursor(cursor_factory=DictCursor) as cursor:
-        select = f"SELECT (id, url) FROM blacklist WHERE id = {user};"
+        select = f"SELECT (id, url, added_by) FROM blacklist WHERE id = {user};"
         cursor.execute(select)
         results = cursor.fetchall()
 
         if results:
-            return True
+            items = ['id', 'role', 'added_by']
+
+            row = results[0]
+            row_values = tuple(row)[0][1:-1].split(',')
+            row_d = {items[i]: row_values[i] for i in range(len(row_values))}
+
+            return row_d
+
         else:
             return False
 
@@ -43,7 +50,7 @@ def check_in_blacklist(conn, user):
 def insert_to_blacklist(conn, user, url, added_by):
     with conn.cursor(cursor_factory=DictCursor) as cursor:
         insert = f"INSERT INTO blacklist(id, url, added_by) VALUES ({user}, '{url}', '{added_by}');"
-        update = f"UPDATE blacklist SET url = '{url}' WHERE id = {user};"
+        update = f"UPDATE blacklist SET url = '{url}' WHERE id = '{user}';"
 
         try:
             cursor.execute(insert)
@@ -93,4 +100,4 @@ def select_users_by_role(conn, role):
 
 # insert_to_blacklist(conn, 12323123, 'lol.wtf', 'superadmin')
 # remove_from_blacklist(conn, 12323123)
-print(check_in_blacklist(conn, 12323123))
+# print(check_in_blacklist(conn, 12323123))
