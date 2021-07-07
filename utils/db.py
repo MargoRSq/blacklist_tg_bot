@@ -1,9 +1,10 @@
 import psycopg2
 
+from telegram import Update
+from telegram.ext import CallbackContext
 from psycopg2.extras import DictCursor
 from utils.config import DB_NAME, DB_PASSWORD, DB_USER
 
-from psycopg2.errors import UniqueViolation
 
 conn = psycopg2.connect(dbname=DB_NAME, user=DB_USER,
                         password=DB_PASSWORD, host='localhost')
@@ -21,17 +22,33 @@ def create_db(conn):
 
 
 def insert_user(conn, user, role, url):
-    with conn.cursor(cursor_factory=DictCursor) as cursor:
-        insert = f"INSERT INTO users(id, role, url) VALUES ({user}, '{role}', '{url}');"
+    if not check_in_users(conn, user):
+        with conn.cursor(cursor_factory=DictCursor) as cursor:
+            insert = "INSERT INTO users(id, role, url) VALUES (%s, %s, %s);"
 
-        cursor.execute(insert)
-        conn.commit()
+            cursor.execute(insert, [user, role, url])
+            conn.commit()
+        return True
+    else:
+        return False
+
+
+def remove_user(conn, user):
+    if check_in_users(conn, user):
+        with conn.cursor(cursor_factory=DictCursor) as cursor:
+            insert = "DELETE FROM users WHERE id = %s;"
+
+            cursor.execute(insert, [user])
+            conn.commit()
+        return True
+    else:
+        return False
 
 
 def check_in_blacklist(conn, user):
     with conn.cursor(cursor_factory=DictCursor) as cursor:
-        select = f"SELECT (id, url, added_by) FROM blacklist WHERE id = {user};"
-        cursor.execute(select)
+        select = "SELECT (id, url, added_by) FROM blacklist WHERE id = %s;"
+        cursor.execute(select, [user])
         results = cursor.fetchall()
 
         if results:
@@ -39,7 +56,28 @@ def check_in_blacklist(conn, user):
 
             row = results[0]
             row_values = tuple(row)[0][1:-1].split(',')
-            row_d = {items[i]: row_values[i] for i in range(len(row_values))}
+            row_d = {items[i]: row_values[i]
+                     for i in range(len(row_values))}
+
+            return row_d
+
+        else:
+            return False
+
+
+def check_in_users(conn, user):
+    with conn.cursor(cursor_factory=DictCursor) as cursor:
+        select = "SELECT (id, role, url) FROM users WHERE id = %s;"
+        cursor.execute(select, [user])
+        results = cursor.fetchall()
+
+        if results:
+            items = ['id', 'role', 'url']
+
+            row = results[0]
+            row_values = tuple(row)[0][1:-1].split(',')
+            row_d = {items[i]: row_values[i]
+                     for i in range(len(row_values))}
 
             return row_d
 
@@ -49,37 +87,33 @@ def check_in_blacklist(conn, user):
 
 def insert_to_blacklist(conn, user, url, added_by):
     with conn.cursor(cursor_factory=DictCursor) as cursor:
-        insert = f"INSERT INTO blacklist(id, url, added_by) VALUES ({user}, '{url}', '{added_by}');"
-        update = f"UPDATE blacklist SET url = '{url}' WHERE id = '{user}';"
+        insert = "INSERT INTO blacklist(id, url, added_by) VALUES (%s, %s, %s);"
+        # update = f"UPDATE blacklist SET url = '{url}' WHERE id = '{user}';"
 
-        try:
-            cursor.execute(insert)
+        if not check_in_blacklist(conn, user):
+            cursor.execute(insert, [user, url, added_by])
             conn.commit()
 
             return True
-        except UniqueViolation:
-            cursor.execute(update, (user, url))
-            conn.commit()
-
+        else:
             return False
 
 
 def remove_from_blacklist(conn, user):
     with conn.cursor(cursor_factory=DictCursor) as cursor:
-        delete = f"DELETE FROM blacklist WHERE id = {user};"
+        delete = "DELETE FROM blacklist WHERE id = %s;"
 
-        if not check_in_blacklist(conn, user):
-            cursor.execute(delete)
-            conn.commit()
+        cursor.execute(delete, [user])
+        conn.commit()
 
-            return True
+        return True
 
 
 def select_users_by_role(conn, role):
     with conn.cursor(cursor_factory=DictCursor) as cursor:
-        select = f"SELECT (id, role, url) FROM users WHERE role = '{role}';"
+        select = "SELECT (id, role, url) FROM users WHERE role = %s;"
 
-        cursor.execute(select)
+        cursor.execute(select, [role])
         results = cursor.fetchall()
         items = ['id', 'role', 'url']
 
@@ -101,3 +135,5 @@ def select_users_by_role(conn, role):
 # insert_to_blacklist(conn, 12323123, 'lol.wtf', 'superadmin')
 # remove_from_blacklist(conn, 12323123)
 # print(check_in_blacklist(conn, 12323123))
+
+# select_users_by_role

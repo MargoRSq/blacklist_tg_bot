@@ -1,27 +1,25 @@
-def add_user(user_array, filename, user_text):
-    user_array.append(user_text)
-
-    with open(filename, 'a') as f:
-        f.write(f'{user_text}\n')
-
-    return user_array
+from utils.db import conn
 
 
-def remove_user(user_array, filename, user_id):
-
-    user_ids = [user.split()[0] for user in user_array]
-    index = user_ids.index(user_id)
-    del user_array[index]
-
-    with open(filename, 'w') as f:
-        for user in user_array:
-            f.write(f'{user}\n')
-
-    return user_array
+class InvalidId(Exception):
+    pass
 
 
-def update_id_list(lines_blacklist):
+def check_digit(string):
+    if all([c.isdigit() for c in string]):
+        return True
+    else:
+        raise InvalidId('invalid id')
 
-    blacklist_ids = [line.rstrip().split()[0] for line in lines_blacklist]
 
-    return blacklist_ids
+def get_message_text_array(message):
+    text = message['text']
+    return text.split()
+
+
+def raise_invalid_id(user_id, update):
+    try:
+        check_digit(user_id)
+    except InvalidId:
+        update.message.reply_text(
+            'Ошибка! введите правильный ID пользователя!')
