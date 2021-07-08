@@ -1,8 +1,10 @@
 from telegram import Update, ForceReply, Bot
-from telegram.ext import Updater, CommandHandler, MessageHandler, Filters, CallbackContext
+from telegram.ext import Updater, CommandHandler, jobqueue, MessageHandler, Filters
 from telegram.utils.helpers import from_timestamp
 
 from utils.config import TOKEN
+
+from commands.parsing import notify_assignees, parse_ids
 from commands.subs import mailing, sub
 from commands.start import start
 from commands.admin_users import append_user_admin, remove_user_admin
@@ -18,6 +20,7 @@ def main() -> None:
     # Create the Updater and pass it your bot's token.
     updater = Updater(TOKEN)
 
+    j = updater.job_queue
     # Get the dispatcher to register handlers
     dispatcher = updater.dispatcher
 
@@ -33,6 +36,10 @@ def main() -> None:
     dispatcher.add_handler(CommandHandler("check", check_user_blacklist))
     dispatcher.add_handler(CommandHandler("mailing", mailing))
     dispatcher.add_handler(CommandHandler("sub", sub))
+    dispatcher.add_handler(MessageHandler(
+        Filters.regex('^(id|id:|ID)'), parse_ids))
+
+    job_minute = j.run_repeating(notify_assignees, interval=1, first=1)
 
     # Start the Bot
     updater.start_polling()
