@@ -61,11 +61,9 @@ def check_in_blacklist(conn, user):
 
             return row_d
 
-        else:
-            return False
-
 
 def check_in_users(conn, user):
+
     with conn.cursor(cursor_factory=DictCursor) as cursor:
         select = "SELECT (id, role, url) FROM users WHERE id = %s;"
         cursor.execute(select, [user])

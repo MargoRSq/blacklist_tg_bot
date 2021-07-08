@@ -1,7 +1,9 @@
 from telegram import Update, ForceReply, Bot
 from telegram.ext import Updater, CommandHandler, MessageHandler, Filters, CallbackContext
+from telegram.utils.helpers import from_timestamp
 
 from utils.config import TOKEN
+from commands.subs import mailing, sub
 from commands.start import start
 from commands.admin_users import append_user_admin, remove_user_admin
 from commands.blacklist_users import append_user_blacklist, remove_user_blacklist, check_user_blacklist
@@ -9,10 +11,6 @@ from commands.blacklist_users import append_user_blacklist, remove_user_blacklis
 
 from pprint import pprint
 from psycopg2.errors import SyntaxError
-
-
-def help_command(update: Update, context: CallbackContext) -> None:
-    update.message.reply_text('Help!')
 
 
 def main() -> None:
@@ -25,15 +23,16 @@ def main() -> None:
 
     # on different commands - answer in Telegram
     dispatcher.add_handler(CommandHandler("start", start))
-    dispatcher.add_handler(CommandHandler("help", help_command))
 
-    dispatcher.add_handler(CommandHandler("admin", append_user_admin))
+    dispatcher.add_handler(CommandHandler("add_admin", append_user_admin))
     dispatcher.add_handler(CommandHandler(
         "remove_admin", remove_user_admin))
 
     dispatcher.add_handler(CommandHandler("add", append_user_blacklist))
     dispatcher.add_handler(CommandHandler("remove", remove_user_blacklist))
     dispatcher.add_handler(CommandHandler("check", check_user_blacklist))
+    dispatcher.add_handler(CommandHandler("mailing", mailing))
+    dispatcher.add_handler(CommandHandler("sub", sub))
 
     # Start the Bot
     updater.start_polling()
