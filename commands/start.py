@@ -25,6 +25,8 @@ start_superadmin = """Комманды:
 /add_admin {user_id} добавить админа
 
 /remove_admin {user_id} удалить админа
+
+/parser команда парсит все id в blacklist, которые упоминались в чате
     """
 
 
