@@ -1,22 +1,15 @@
-from telegram import Update, Bot
+from telegram import Update
 from telegram.ext import CallbackContext
 from telegram.error import Unauthorized
 
-from utils.config import TOKEN
+from commands.utils import bot
 from commands.utils import form_permission
 
-
-from commands.utils import get_message_text_array, raise_invalid_id
 from utils.db import (
-    check_in_blacklist,
     conn,
-    insert_to_blacklist,
-    remove_from_blacklist,
     select_users_by_role,
     remove_user
 )
-
-bot = Bot(token=TOKEN)
 
 
 def mailing(update: Update, context: CallbackContext):

@@ -1,4 +1,4 @@
-from telegram import Update, user
+from telegram import Update
 from telegram.ext import CallbackContext
 
 from commands.utils import get_message_text_array, raise_invalid_id, form_permission
@@ -7,8 +7,6 @@ from utils.db import (
     remove_user,
     conn
 )
-
-from commands.blacklist_users import select_users_by_role
 
 
 def append_user_admin(update: Update, context: CallbackContext) -> None:

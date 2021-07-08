@@ -7,7 +7,6 @@ from utils.db import (
     conn,
     insert_to_blacklist,
     remove_from_blacklist,
-    select_users_by_role,
 )
 
 

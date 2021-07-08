@@ -1,4 +1,9 @@
+from telegram import bot
+
+from utils.config import TOKEN
 from utils.db import conn, select_users_by_role
+
+bot = bot.Bot(token=TOKEN)
 
 
 class InvalidId(Exception):

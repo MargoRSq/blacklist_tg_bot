@@ -1,9 +1,8 @@
 from telegram import Update
 from telegram.ext import CallbackContext
 
-from psycopg2.errors import UniqueViolation, InFailedSqlTransaction
 
-from utils.db import conn, insert_user, select_users_by_role, check_in_blacklist, check_in_users
+from utils.db import conn, insert_user, check_in_users
 
 start_superadmin = """Комманды:
 

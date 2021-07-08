@@ -1,24 +1,10 @@
 import psycopg2
 
-from telegram import Update
-from telegram.ext import CallbackContext
 from psycopg2.extras import DictCursor
-from utils.config import DB_NAME, DB_PASSWORD, DB_USER
+from utils.config import DATABASE_URL
 
 
-conn = psycopg2.connect(dbname=DB_NAME, user=DB_USER,
-                        password=DB_PASSWORD, host='localhost')
-
-
-def create_db(conn):
-    with conn.cursor(cursor_factory=DictCursor) as cursor:
-        create_roles = "CREATE TYPE roles AS ENUM ('superadmin', 'admin', 'user');"
-        create_admins = "CREATE TABLE users(id bigint PRIMARY KEY, role roles);"
-
-        create_blacklist = "CREATE TABLE blacklist(id bigint PRIMARY KEY, url VARCHAR(100), added_by roles);"
-        # cursor.execute(create_roles)
-        cursor.execute(create_blacklist)
-        conn.commit()
+conn = psycopg2.connect(DATABASE_URL)
 
 
 def insert_user(conn, user, role, url):
@@ -123,15 +109,3 @@ def select_users_by_role(conn, role):
             results_array.append(row_d)
 
         return results_array
-
-
-# create_db(conn)
-# insert_user(conn, 13133313, 'superadmin', 'lo.wtf')
-# print(select_users_by_role(conn, 'superadmin'))
-
-
-# insert_to_blacklist(conn, 12323123, 'lol.wtf', 'superadmin')
-# remove_from_blacklist(conn, 12323123)
-# print(check_in_blacklist(conn, 12323123))
-
-# select_users_by_role

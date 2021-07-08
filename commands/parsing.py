@@ -1,10 +1,8 @@
-from telegram import Update, bot
+from telegram import Update
 from telegram.ext import CallbackContext
 
-from utils.config import TOKEN
 from utils.db import check_in_blacklist, conn, insert_to_blacklist
-
-bot = bot.Bot(token=TOKEN)
+from commands.utils import bot
 
 
 def add_to_db(text):
