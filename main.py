@@ -5,6 +5,7 @@ from commands.blacklist_users import (
     append_user_blacklist,
     check_user_blacklist,
     remove_user_blacklist,
+    count_users_blacklist
 )
 from commands.parsing import load_old_ids, parse_ids
 from commands.start import start
@@ -35,6 +36,7 @@ def main() -> None:
     dispatcher.add_handler(MessageHandler(
         Filters.regex('^(id|id:|ID)'), parse_ids))
     dispatcher.add_handler(CommandHandler("parser", load_old_ids))
+    dispatcher.add_handler(CommandHandler("count_blacklist", count_users_blacklist))
 
     dispatcher.add_handler(CommandHandler("create_db", create_db))
 

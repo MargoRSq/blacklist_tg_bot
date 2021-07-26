@@ -7,6 +7,7 @@ from utils.db import (
     conn,
     insert_to_blacklist,
     remove_from_blacklist,
+    count_blacklist
 )
 
 
@@ -134,3 +135,9 @@ def check_user_blacklist(update: Update, context: CallbackContext) -> None:
 
     else:
         update.message.reply_text(check_text)
+
+
+def count_users_blacklist(update: Update, context: CallbackContext) -> None:
+    count = count_blacklist(conn)
+    text = f'В черном списке {count} пользователей'
+    update.message.reply_text(text)

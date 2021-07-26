@@ -48,6 +48,15 @@ def check_in_blacklist(conn, user):
             return row_d
 
 
+def count_blacklist(conn):
+    with conn.cursor() as cursor:
+
+        select = "SELECT (id, url, added_by) FROM blacklist;"
+        cursor.execute(select)
+
+        return len(cursor.fetchall())
+
+
 def check_in_users(conn, user):
 
     with conn.cursor(cursor_factory=DictCursor) as cursor:
