@@ -2,7 +2,14 @@
 from utils.db import conn, insert_user
 
 
-def create_db():
+def create_db(update: Update, context: CallbackContext):
+
+    from_id = message['from']['id']
+
+    permissions = form_permission([superadmin])
+    permissions_dict = permissions['dict']
+
+    superadmins = permissions_dict[superadmin]
     with conn.cursor() as cursor:
         create_roles = "CREATE TYPE roles AS ENUM ('superadmin', 'admin', 'user');"
         create_users = "CREATE TABLE users(id bigint PRIMARY KEY, role roles, url VARCHAR(100));"
