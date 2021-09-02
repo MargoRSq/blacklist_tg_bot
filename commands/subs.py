@@ -3,7 +3,7 @@ from telegram.error import Unauthorized
 from telegram.ext import CallbackContext
 
 from commands.utils import bot, form_permission, admin, superadmin, user
-from utils.db import conn, remove_user, select_users_by_role
+from utils.db import conn, count_blacklist, remove_user, select_users_by_role
 
 
 def mailing(update: Update, context: CallbackContext):
@@ -12,8 +12,8 @@ def mailing(update: Update, context: CallbackContext):
     message = message_dict['text']
     mailing_text = message[9:]
 
-    users_arrays = [select_users_by_role(conn, user)
-                    for user in [user, admin]]
+    users_arrays = [select_users_by_role(conn, role)
+                    for role in ['user', 'admin']]
 
     users_dicts = [
         item for sublist in users_arrays for item in sublist]
@@ -48,5 +48,6 @@ def sub(update: Update, context: CallbackContext):
         users = len(select_users_by_role(conn, user))
         admins = len(select_users_by_role(conn, admin))
         superadmins = len(select_users_by_role(conn, superadmin))
+        blacklist = count_blacklist(conn)
         update.message.reply_text(
-            f'Пользователей: {users}\nАдминов: {admins}\nСуперадминов: {superadmins}')
+            f'В черном списке: {blacklist}\nПользователей: {users}\nАдминов: {admins}\nСуперадминов: {superadmins}')

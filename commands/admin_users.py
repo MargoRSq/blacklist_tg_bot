@@ -1,12 +1,14 @@
-from telegram import Update
-from telegram.ext import CallbackContext
-
-from commands.utils import get_message_text_array, raise_invalid_id, form_permission, admin, superadmin
 from utils.db import (
     insert_user,
     remove_user,
     conn
 )
+from commands.utils import (get_message_text_array, raise_invalid_id,
+                            form_permission, check_digit,
+                            admin, superadmin)
+from telegram.ext import CallbackContext
+from telegram import Update
+
 
 added_admin_text = 'Пользователь теперь админ!'
 removed_admin_text = 'Пользователь больше не админ!'
@@ -22,7 +24,6 @@ def append_user_admin(update: Update, context: CallbackContext) -> None:
     update_dict = update.to_dict()
     message = update_dict['message']
     text_array = get_message_text_array(message)
-    print(len(text_array))
 
     if len(text_array) >= 2:
         user_id = text_array[1]

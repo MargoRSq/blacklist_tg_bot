@@ -7,6 +7,7 @@ from commands.blacklist_users import (
     remove_user_blacklist,
     count_users_blacklist
 )
+from commands.hater import hate
 from commands.parsing import load_old_ids, parse_ids
 from commands.start import start
 from commands.subs import mailing, sub
@@ -18,7 +19,6 @@ def main() -> None:
     """Start the bot."""
     updater = Updater(TOKEN)
 
-    j = updater.job_queue
     dispatcher = updater.dispatcher
 
     dispatcher.add_handler(CommandHandler("start", start))
@@ -33,12 +33,16 @@ def main() -> None:
     dispatcher.add_handler(CommandHandler("check", check_user_blacklist))
     dispatcher.add_handler(CommandHandler("mailing", mailing))
     dispatcher.add_handler(CommandHandler("sub", sub))
-    dispatcher.add_handler(MessageHandler(
-        Filters.regex('^(id|id:|ID)'), parse_ids))
+
     dispatcher.add_handler(CommandHandler("parser", load_old_ids))
-    dispatcher.add_handler(CommandHandler("count_blacklist", count_users_blacklist))
+    dispatcher.add_handler(CommandHandler(
+        "count_blacklist", count_users_blacklist))
 
     dispatcher.add_handler(CommandHandler("create_db", create_db))
+
+    dispatcher.add_handler(MessageHandler(
+        Filters.regex('^(id|id:|ID)'), parse_ids))
+    dispatcher.add_handler(MessageHandler(Filters.regex('.*'), hate))
 
     updater.start_polling()
 

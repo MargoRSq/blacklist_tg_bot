@@ -4,7 +4,6 @@ from telegram.ext import CallbackContext
 from commands.utils import get_message_text_array, form_permission, superadmin
 from utils.db import conn, insert_user
 
-
 from psycopg2.errors import DuplicateObject
 
 

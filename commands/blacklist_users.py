@@ -10,7 +10,6 @@ from utils.db import (
     count_blacklist
 )
 
-
 add_text = """
 /add {user_id} {url} - Добавить или обновить ссылку на человека
 Пример: /add 88888888 https://www.t.me...
@@ -26,7 +25,7 @@ check_text = """
 
 added_to_blacklist_text = 'Пользователь добавлен в черный список!'
 removed_from_blacklist_text = 'Пользователь удален из черного списка!'
-already_in_blacklist_text = 'Пользователь уже находился в черном списке, ссылка пользователя обновлена в базе данных!'
+already_in_blacklist_text = 'Пользователь уже находился в черном списке!'
 not_in_blackilist_text = 'Пользователя нет в черном списке!'
 in_blacklist_text = 'Пользователь в черном списке!'
 
@@ -39,20 +38,20 @@ def append_user_blacklist(update: Update, context: CallbackContext) -> None:
     message = update_dict['message']
     text_array = get_message_text_array(message)
 
+    permissions = form_permission([admin, superadmin])
+    permissions_dict = permissions['dict']
+    permissions_list = permissions['list']
+
+    superadmins = permissions_dict[superadmin]
+
+    from_id = message['from']['id']
+
     if len(text_array) > 1:
         user_id = text_array[1]
         if raise_invalid_id(user_id, update):
             url = ''
             if len(text_array) > 2:
                 url = text_array[2]
-
-            permissions = form_permission([admin, superadmin])
-            permissions_dict = permissions['dict']
-            permissions_list = permissions['list']
-
-            superadmins = permissions_dict[superadmin]
-
-            from_id = message['from']['id']
 
             if from_id in permissions_list:
 
@@ -70,7 +69,8 @@ def append_user_blacklist(update: Update, context: CallbackContext) -> None:
             elif from_id not in permissions_list:
                 update.message.reply_text(no_permission)
     else:
-        update.message.reply_text(add_text)
+        if from_id in permissions_list:
+            update.message.reply_text(add_text)
 
 
 def remove_user_blacklist(update: Update, context: CallbackContext) -> None:
@@ -79,17 +79,17 @@ def remove_user_blacklist(update: Update, context: CallbackContext) -> None:
     message = update_dict['message']
     text_array = get_message_text_array(message)
 
+    permissions = form_permission([admin, superadmin])
+    permissions_dict = permissions['dict']
+    permissions_list = permissions['list']
+
+    superadmins = permissions_dict[superadmin]
+
+    from_id = message['from']['id']
+
     if len(text_array) > 1:
         user_id = text_array[1]
         raise_invalid_id(user_id, update)
-
-        permissions = form_permission([admin, superadmin])
-        permissions_dict = permissions['dict']
-        permissions_list = permissions['list']
-
-        superadmins = permissions_dict[superadmin]
-
-        from_id = message['from']['id']
 
         if from_id in permissions_list:
 
@@ -115,7 +115,8 @@ def remove_user_blacklist(update: Update, context: CallbackContext) -> None:
                 update.message.reply_text(not_in_blackilist_text)
 
     else:
-        update.message.reply_text(remove_text)
+        if from_id in permissions_list:
+            update.message.reply_text(add_text)
 
 
 def check_user_blacklist(update: Update, context: CallbackContext) -> None:
@@ -126,12 +127,11 @@ def check_user_blacklist(update: Update, context: CallbackContext) -> None:
 
     if len(text_array) > 1:
         user_id = text_array[1]
-        raise_invalid_id(user_id, update)
-
-        if check_in_blacklist(conn, user_id):
-            update.message.reply_text(in_blacklist_text)
-        else:
-            update.message.reply_text(not_in_blackilist_text)
+        if raise_invalid_id(user_id, update):
+            if check_in_blacklist(conn, user_id):
+                update.message.reply_text(in_blacklist_text)
+            else:
+                update.message.reply_text(not_in_blackilist_text)
 
     else:
         update.message.reply_text(check_text)
