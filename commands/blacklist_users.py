@@ -3,8 +3,7 @@ import re
 from telegram import Update
 from telegram.ext import CallbackContext
 
-from commands.utils import (get_message_text_array, raise_invalid_id, check_digit,
-							form_permission, admin, superadmin)
+from commands.utils import get_message_text_array, form_permission, check_digit
 from db.operations import (
 	check_in_blacklist,
 	insert_to_blacklist,
@@ -27,8 +26,6 @@ check_text = """
 Пример: /check 88888888
 """
 
-
-
 added_to_blacklist_text = 'Пользователь добавлен в черный список!'
 removed_from_blacklist_text = 'Пользователь удален из черного списка!'
 already_in_blacklist_text = 'Пользователь уже находился в черном списке!'
@@ -36,7 +33,7 @@ not_in_blackilist_text = 'Пользователя нет в черном спи
 in_blacklist_text = 'Пользователь в черном списке!'
 
 no_permission = 'У вас недостаточно прав!'
-conn = 1
+
 
 def append_user_blacklist(update: Update, context: CallbackContext) -> None:
 
@@ -65,7 +62,6 @@ def append_user_blacklist(update: Update, context: CallbackContext) -> None:
 			update.message.reply_text(added_to_blacklist_text)
 		else:
 			update.message.reply_text(already_in_blacklist_text)
-
 
 
 def remove_user_blacklist(update: Update, context: CallbackContext) -> None:
@@ -100,19 +96,13 @@ def check_user_blacklist(update: Update, context: CallbackContext) -> None:
 	message = update_dict['message']
 	text_array = get_message_text_array(message)
 
-	if len(text_array) > 1:
-		user_id = text_array[1]
-		if raise_invalid_id(user_id, update):
-			if check_in_blacklist(user_id):
-				update.message.reply_text(in_blacklist_text)
-			else:
-				update.message.reply_text(not_in_blackilist_text)
-
-	else:
+	if len(text_array) == 1:
 		update.message.reply_text(check_text)
-
-
-def count_users_blacklist(update: Update, context: CallbackContext) -> None:
-	count = count_blacklist(conn)
-	text = f'В черном списке {count} пользователей'
-	update.message.reply_text(text)
+	elif len(text_array) == 2:
+		targer_id = text_array[1]
+		if not check_digit(targer_id):
+			return update.message.reply_text("Некорректный ID")
+		if check_in_blacklist(targer_id):
+			update.message.reply_text(in_blacklist_text)
+		else:
+			update.message.reply_text(not_in_blackilist_text)

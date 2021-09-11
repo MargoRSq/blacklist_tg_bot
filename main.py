@@ -4,8 +4,7 @@ from commands.admin_users import append_user_admin, remove_user_admin
 from commands.blacklist_users import (
     append_user_blacklist,
     check_user_blacklist,
-    remove_user_blacklist,
-    count_users_blacklist
+    remove_user_blacklist
 )
 from commands.hater import hate
 from commands.parsing import load_old_ids, parse_ids
@@ -35,9 +34,6 @@ def main() -> None:
     dispatcher.add_handler(CommandHandler("sub", sub))
 
     dispatcher.add_handler(CommandHandler("parser", load_old_ids))
-    dispatcher.add_handler(CommandHandler(
-        "count_blacklist", count_users_blacklist))
-
     dispatcher.add_handler(CommandHandler("create_db", create_db))
 
     dispatcher.add_handler(MessageHandler(
