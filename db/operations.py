@@ -38,6 +38,17 @@ def remove_from_blacklist(user):
 	return True
 
 
+def select_addedby(user):
+	select_user = (
+		select(Blacklist.added_by).
+		where(Blacklist.id == user)
+	)
+	with engine.connect() as conn:
+		results = conn.execute(select_user)
+		return results.fetchone()[0].value
+
+
+
 # users_table operations
 def check_in_users(user):
 	q = session.query(Users).filter(Users.id == user)

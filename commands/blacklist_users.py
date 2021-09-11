@@ -10,7 +10,8 @@ from db.operations import (
 	insert_to_blacklist,
 	remove_from_blacklist,
 	count_blacklist,
-	get_user_role
+	get_user_role,
+	select_addedby
 )
 
 add_text = """
@@ -73,44 +74,24 @@ def remove_user_blacklist(update: Update, context: CallbackContext) -> None:
 	message = update_dict['message']
 	text_array = get_message_text_array(message)
 
-	permissions = form_permission([admin, superadmin])
-	permissions_dict = permissions['dict']
-	permissions_list = permissions['list']
-
-	superadmins = permissions_dict[superadmin]
-
+	permissions_list = form_permission(['admin', 'superadmin'])
 	from_id = message['from']['id']
 
-	if len(text_array) > 1:
-		user_id = text_array[1]
-		raise_invalid_id(user_id, update)
+	if len(text_array) == 1 and from_id in permissions_list:
+		update.message.reply_text(remove_text)
+	elif len(text_array) == 2 and from_id in permissions_list:
+		targer_id = text_array[1]
+		if not check_digit(targer_id):
+			return update.message.reply_text("Некорректный ID")
+		if not check_in_blacklist(targer_id):
+			return update.message.reply_text("Пользователь не в черном списке")
 
-		if from_id in permissions_list:
-
-			is_in_blacklist = check_in_blacklist(user_id)
-
-			if is_in_blacklist:
-				added_by = is_in_blacklist['added_by']
-
-				if added_by == superadmin and from_id in superadmins:
-					result = remove_from_blacklist(user_id)
-					if result:
-						update.message.reply_text(removed_from_blacklist_text)
-
-				elif added_by == admin and from_id in permissions_list:
-					result = remove_from_blacklist(user_id)
-					if result:
-						update.message.reply_text(
-							removed_from_blacklist_text)
-
-				elif added_by == superadmin and from_id not in superadmins:
-					update.message.reply_text(no_permission)
-			else:
-				update.message.reply_text(not_in_blackilist_text)
-
-	else:
-		if from_id in permissions_list:
-			update.message.reply_text(add_text)
+		role = get_user_role(from_id)
+		if role >= select_addedby(targer_id):
+			remove_from_blacklist(targer_id)
+			update.message.reply_text("Пользователь удален из черного списка")
+		else:
+			update.message.reply_text(no_permission)
 
 
 def check_user_blacklist(update: Update, context: CallbackContext) -> None:

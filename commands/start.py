@@ -1,7 +1,7 @@
 from telegram import Update
 from telegram.ext import CallbackContext
 
-from db.operations import insert_user, check_in_users
+from db.operations import insert_user, check_in_users, get_user_role
 
 start_superadmin = """Комманды:
 	/help - вся информация о командах
@@ -47,18 +47,17 @@ start_user = """
 
 def start(update: Update, context: CallbackContext) -> None:
 	user = update.effective_user
-	user_id = user["id"]
+	user_id = user['id']
+	username = '@' + user['username']
 
-	if_in_users = check_in_users( user_id)
-	if not if_in_users:
-		insert_user(user_id, "user", "")
+	if not check_in_users(user_id):
+		insert_user(user_id, "user", username)
+		return update.message.reply_text(start_user)
+
+	role = get_user_role(user_id)
+	if role == "user":
 		update.message.reply_text(start_user)
-
-	elif if_in_users["role"] == "user":
-		update.message.reply_text(start_user)
-
-	elif if_in_users["role"] == "admin":
+	elif role == "admin":
 		update.message.reply_text(start_admin)
-
-	elif if_in_users["role"] == "superadmin":
+	elif role == "superadmin":
 		update.message.reply_text(start_superadmin)
