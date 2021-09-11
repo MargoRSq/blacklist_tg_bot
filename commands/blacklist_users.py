@@ -3,14 +3,17 @@ import re
 from telegram import Update
 from telegram.ext import CallbackContext
 
-from commands.utils import get_message_text_array, form_permission, check_digit
+from commands.utils import get_message_text_array, form_permission, check_digit, bot
 from db.operations import (
 	check_in_blacklist,
 	insert_to_blacklist,
 	remove_from_blacklist,
 	count_blacklist,
 	get_user_role,
-	select_addedby
+	select_addedby,
+	select_users_by_role,
+	select_chat_id,
+	select_message_id
 )
 
 add_text = """
@@ -94,6 +97,7 @@ def check_user_blacklist(update: Update, context: CallbackContext) -> None:
 
 	update_dict = update.to_dict()
 	message = update_dict['message']
+	chat_id = message['chat']['id']
 	text_array = get_message_text_array(message)
 
 	if len(text_array) == 1:
@@ -103,6 +107,10 @@ def check_user_blacklist(update: Update, context: CallbackContext) -> None:
 		if not check_digit(targer_id):
 			return update.message.reply_text("Некорректный ID")
 		if check_in_blacklist(targer_id):
-			update.message.reply_text(in_blacklist_text)
+			blacklist_chat_id = select_chat_id(targer_id)
+			blacklist_message_id = select_message_id(targer_id)
+			update.message.reply_text("Чел в черном списке!")
+			message = bot.forward_message(
+				chat_id, blacklist_chat_id, blacklist_message_id)
 		else:
 			update.message.reply_text(not_in_blackilist_text)
