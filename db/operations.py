@@ -47,6 +47,25 @@ def select_addedby(user):
 		results = conn.execute(select_user)
 		return results.fetchone()[0].value
 
+def select_chat_id(user):
+	select_user = (
+		select(Blacklist.chat_id).
+		where(Blacklist.id == user)
+	)
+	with engine.connect() as conn:
+		results = conn.execute(select_user)
+		return results.fetchone()[0]
+
+
+def select_message_id(user):
+	select_user = (
+		select(Blacklist.message_id).
+		where(Blacklist.id == user)
+	)
+	with engine.connect() as conn:
+		results = conn.execute(select_user)
+		return results.fetchone()[0]
+
 
 
 # users_table operations

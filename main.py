@@ -37,7 +37,7 @@ def main() -> None:
     dispatcher.add_handler(CommandHandler("create_db", create_db))
 
     dispatcher.add_handler(MessageHandler(
-        Filters.regex('^(id|id:|ID)'), parse_ids))
+        Filters.regex('(id|id:|ID)'), parse_ids))
     dispatcher.add_handler(MessageHandler(Filters.regex('.*'), hate))
 
     updater.start_polling()
