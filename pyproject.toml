@@ -10,8 +10,10 @@ python-telegram-bot = "^13.7"
 starlette = "^0.15.0"
 autopep8 = "^1.5.7"
 psycopg2-binary = "^2.9.1"
+SQLAlchemy = "1.4.22"
 
 [tool.poetry.dev-dependencies]
+black = {version = "^21.8b0", allow-prereleases = true}
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]

@@ -10,26 +10,26 @@ from db.db import engine, Base, metadata_obj, session
 
 
 class UserType(enum.Enum):
-    user = 'user'
-    admin = 'admin'
-    superadmin = 'superadmin'
+	user = 'user'
+	admin = 'admin'
+	superadmin = 'superadmin'
 
 
 class Blacklist(Base):
-    __tablename__ = 'blacklist_table'
+	__tablename__ = 'blacklist_table'
 
-    id = Column(Integer, primary_key=True)
-    url = Column(String(100))
-    added_by = Column(Enum(UserType))
-    chat_id = Column(Integer)
-    message_id = Column(Integer)
+	id = Column(Integer, primary_key=True)
+	url = Column(String(100))
+	added_by = Column(Enum(UserType))
+	chat_id = Column(Integer)
+	message_id = Column(Integer)
 
-    def __repr__(self):
-        return f"User(id={self.id!r}, url={self.url!r}, chat_id={self.chat_id!r})"
+	def __repr__(self):
+		return f"User(id={self.id!r}, url={self.url!r}, chat_id={self.chat_id!r})"
 
 
 new_user = Blacklist(id=123, url="@lol", added_by=UserType.superadmin,
-                     chat_id=-11231, message_id=2)
+					 chat_id=-11231, message_id=2)
 
 
 # stmt = (
