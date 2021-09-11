@@ -3,8 +3,7 @@ from db.schemas import Blacklist
 
 from db.operations import (
     insert_user,
-    remove_user,
-    conn
+    remove_user
 )
 from commands.utils import (get_message_text_array, raise_invalid_id,
                             form_permission, check_digit,
@@ -21,7 +20,7 @@ not_admin_text = 'Пользователь не админ!'
 
 no_permission = 'У вас недостаточно прав!'
 
-
+conn = 1
 def append_user_admin(update: Update, context: CallbackContext) -> None:
 
     update_dict = update.to_dict()
@@ -44,7 +43,7 @@ def append_user_admin(update: Update, context: CallbackContext) -> None:
         from_id = message['from']['id']
 
         if from_id in superadmins:
-            result = insert_user(conn, user_id, admin, url)
+            result = insert_user(user_id, admin, url)
             if result:
                 update.message.reply_text(added_admin_text)
             else:
@@ -72,7 +71,7 @@ def remove_user_admin(update: Update, context: CallbackContext) -> None:
         from_id = message['from']['id']
 
         if from_id in superadmins:
-            result = remove_user(conn, user_id)
+            result = remove_user(user_id)
             if result:
                 update.message.reply_text(removed_admin_text)
             else:

@@ -2,7 +2,7 @@ from telegram import Update
 from telegram.ext import CallbackContext
 
 from commands.utils import get_message_text_array, form_permission, superadmin
-from db.operations import conn, insert_user
+from db.operations import insert_user
 
 from psycopg2.errors import DuplicateObject
 
@@ -31,7 +31,7 @@ def create_db(update: Update, context: CallbackContext):
 						cursor.execute(create)
 					conn.commit()
 
-				insert_user(conn, superadmin_id, superadmin, superadmin_url)
+				insert_user(superadmin_id, superadmin, superadmin_url)
 
 			except DuplicateObject:
 				update.message.reply_text('База данных уже создана!')

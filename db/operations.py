@@ -1,18 +1,9 @@
-import psycopg2
-
-from psycopg2.extras import DictCursor
-from utils.config import DATABASE_URL
-
 from sqlalchemy import select, insert, delete
 
-
 from db.schemas import Blacklist, Users
-from db.db import engine, Base, metadata_obj, session
-
-conn = 1
+from db.db import engine, session
 
 # blacklist_table operations
-
 def check_in_blacklist(user):
 	q = session.query(Blacklist).filter(Blacklist.id == user)
 	return session.query(q.exists()).scalar()
@@ -48,7 +39,6 @@ def remove_from_blacklist(user):
 
 
 # users_table operations
-
 def check_in_users(user):
 	q = session.query(Users).filter(Users.id == user)
 	return session.query(q.exists()).scalar()

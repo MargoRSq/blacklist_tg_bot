@@ -1,7 +1,7 @@
 from telegram import Update
 from telegram.ext import CallbackContext
 
-from db.operations import conn, insert_user
+from db.operations import insert_user
 
 from commands.utils import form_permission, superadmin
 
@@ -30,4 +30,4 @@ def create_db(update: Update, context: CallbackContext):
 
 
 # create_db()
-# insert_user(conn, 627775883, 'superadmin', url='@iamsvyatoslav')
+# insert_user(627775883, 'superadmin', url='@iamsvyatoslav')

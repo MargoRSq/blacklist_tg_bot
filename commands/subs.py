@@ -3,7 +3,7 @@ from telegram.error import Unauthorized
 from telegram.ext import CallbackContext
 
 from commands.utils import bot, form_permission, admin, superadmin, user
-from db.operations import conn, count_blacklist, remove_user, select_users_by_role
+from db.operations import count_blacklist, remove_user, select_users_by_role
 
 
 def mailing(update: Update, context: CallbackContext):
@@ -12,7 +12,7 @@ def mailing(update: Update, context: CallbackContext):
 	message = message_dict['text']
 	mailing_text = message[9:]
 
-	users_arrays = [select_users_by_role(conn, role)
+	users_arrays = [select_users_by_role(role)
 					for role in ['user', 'admin']]
 
 	users_dicts = [
@@ -31,7 +31,7 @@ def mailing(update: Update, context: CallbackContext):
 			try:
 				bot.send_message(chat_id=user, text=mailing_text)
 			except Unauthorized:
-				remove_user(conn, user)
+				remove_user(user)
 
 
 def sub(update: Update, context: CallbackContext):
@@ -45,9 +45,9 @@ def sub(update: Update, context: CallbackContext):
 
 	if from_id in permissions_list:
 
-		users = len(select_users_by_role(conn, user))
-		admins = len(select_users_by_role(conn, admin))
-		superadmins = len(select_users_by_role(conn, superadmin))
+		users = len(select_users_by_role(user))
+		admins = len(select_users_by_role(admin))
+		superadmins = len(select_users_by_role(superadmin))
 		blacklist = count_blacklist(conn)
 		update.message.reply_text(
 			f'В черном списке: {blacklist}\nПользователей: {users}\nАдминов: {admins}\nСуперадминов: {superadmins}')

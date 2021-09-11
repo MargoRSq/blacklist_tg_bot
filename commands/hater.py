@@ -3,7 +3,7 @@ from telegram.ext import CallbackContext
 
 from commands.utils import bot
 
-from db.operations import check_in_blacklist, conn
+from db.operations import check_in_blacklist
 
 
 def hate(update: Update, context: CallbackContext):

@@ -1,13 +1,16 @@
+import re
+
 from telegram import Update
 from telegram.ext import CallbackContext
 
-from commands.utils import get_message_text_array, raise_invalid_id, form_permission, admin, superadmin
+from commands.utils import (get_message_text_array, raise_invalid_id, check_digit,
+							form_permission, admin, superadmin)
 from db.operations import (
 	check_in_blacklist,
-	conn,
 	insert_to_blacklist,
 	remove_from_blacklist,
-	count_blacklist
+	count_blacklist,
+	get_user_role
 )
 
 add_text = """
@@ -23,6 +26,8 @@ check_text = """
 Пример: /check 88888888
 """
 
+
+
 added_to_blacklist_text = 'Пользователь добавлен в черный список!'
 removed_from_blacklist_text = 'Пользователь удален из черного списка!'
 already_in_blacklist_text = 'Пользователь уже находился в черном списке!'
@@ -30,7 +35,7 @@ not_in_blackilist_text = 'Пользователя нет в черном спи
 in_blacklist_text = 'Пользователь в черном списке!'
 
 no_permission = 'У вас недостаточно прав!'
-
+conn = 1
 
 def append_user_blacklist(update: Update, context: CallbackContext) -> None:
 
@@ -38,39 +43,28 @@ def append_user_blacklist(update: Update, context: CallbackContext) -> None:
 	message = update_dict['message']
 	text_array = get_message_text_array(message)
 
-	permissions = form_permission([admin, superadmin])
-	permissions_dict = permissions['dict']
-	permissions_list = permissions['list']
-
-	superadmins = permissions_dict[superadmin]
-
+	permissions_list = form_permission(['admin', 'superadmin'])
 	from_id = message['from']['id']
 
-	if len(text_array) > 1:
-		user_id = text_array[1]
-		if raise_invalid_id(user_id, update):
-			url = ''
-			if len(text_array) > 2:
-				url = text_array[2]
+	if len(text_array) == 1 and from_id in permissions_list:
+		update.message.reply_text(add_text)
+	elif len(text_array) == 2 and from_id in permissions_list:
+		update.message.reply_text("Введите ссылку на пользователя")
+	elif len(text_array) == 3 and from_id in permissions_list:
+		targer_id = text_array[1]
+		target_url = text_array[2]
+		if not re.findall(r'\@\w+', message['text']):
+			return update.message.reply_text("@{username} не найден")
+		if not check_digit(targer_id):
+			return update.message.reply_text("Некорректный ID")
 
-			if from_id in permissions_list:
+		role = get_user_role(from_id)
+		result = insert_to_blacklist(targer_id, target_url, role, 1, 1)
+		if result:
+			update.message.reply_text(added_to_blacklist_text)
+		else:
+			update.message.reply_text(already_in_blacklist_text)
 
-				if from_id in superadmins:
-					result = insert_to_blacklist(
-						conn, user_id, url, superadmin)
-				else:
-					result = insert_to_blacklist(conn, user_id, url, admin)
-
-				if result:
-					update.message.reply_text(added_to_blacklist_text)
-				else:
-					update.message.reply_text(already_in_blacklist_text)
-
-			elif from_id not in permissions_list:
-				update.message.reply_text(no_permission)
-	else:
-		if from_id in permissions_list:
-			update.message.reply_text(add_text)
 
 
 def remove_user_blacklist(update: Update, context: CallbackContext) -> None:
@@ -93,18 +87,18 @@ def remove_user_blacklist(update: Update, context: CallbackContext) -> None:
 
 		if from_id in permissions_list:
 
-			is_in_blacklist = check_in_blacklist(conn, user_id)
+			is_in_blacklist = check_in_blacklist(user_id)
 
 			if is_in_blacklist:
 				added_by = is_in_blacklist['added_by']
 
 				if added_by == superadmin and from_id in superadmins:
-					result = remove_from_blacklist(conn, user_id)
+					result = remove_from_blacklist(user_id)
 					if result:
 						update.message.reply_text(removed_from_blacklist_text)
 
 				elif added_by == admin and from_id in permissions_list:
-					result = remove_from_blacklist(conn, user_id)
+					result = remove_from_blacklist(user_id)
 					if result:
 						update.message.reply_text(
 							removed_from_blacklist_text)
@@ -128,7 +122,7 @@ def check_user_blacklist(update: Update, context: CallbackContext) -> None:
 	if len(text_array) > 1:
 		user_id = text_array[1]
 		if raise_invalid_id(user_id, update):
-			if check_in_blacklist(conn, user_id):
+			if check_in_blacklist(user_id):
 				update.message.reply_text(in_blacklist_text)
 			else:
 				update.message.reply_text(not_in_blackilist_text)
