@@ -1,7 +1,7 @@
 from telegram import Update
 from telegram.ext import CallbackContext
 
-from utils.db import conn, insert_user
+from db.operations import conn, insert_user
 
 from commands.utils import form_permission, superadmin
 

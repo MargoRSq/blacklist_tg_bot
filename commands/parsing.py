@@ -1,7 +1,7 @@
 from telegram import Update
 from telegram.ext import CallbackContext
 
-from utils.db import check_in_blacklist, conn, insert_to_blacklist, select_users_by_role
+from db.operations import check_in_blacklist, conn, insert_to_blacklist, select_users_by_role
 from commands.utils import bot
 from utils.config import TRASH_CHAT_ID
 

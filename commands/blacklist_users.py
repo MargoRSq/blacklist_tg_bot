@@ -2,7 +2,7 @@ from telegram import Update
 from telegram.ext import CallbackContext
 
 from commands.utils import get_message_text_array, raise_invalid_id, form_permission, admin, superadmin
-from utils.db import (
+from db.operations import (
 	check_in_blacklist,
 	conn,
 	insert_to_blacklist,

@@ -1,7 +1,7 @@
 from db.schemas import Blacklist
 
 
-from utils.db import (
+from db.operations import (
     insert_user,
     remove_user,
     conn

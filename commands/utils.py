@@ -1,7 +1,7 @@
 from telegram import bot
 
 from utils.config import TOKEN
-from utils.db import conn, select_users_by_role
+from db.operations import conn, select_users_by_role
 
 
 admin = 'admin'

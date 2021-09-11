@@ -3,7 +3,7 @@ from telegram.error import Unauthorized
 from telegram.ext import CallbackContext
 
 from commands.utils import bot, form_permission, admin, superadmin, user
-from utils.db import conn, count_blacklist, remove_user, select_users_by_role
+from db.operations import conn, count_blacklist, remove_user, select_users_by_role
 
 
 def mailing(update: Update, context: CallbackContext):

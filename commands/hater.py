@@ -3,7 +3,7 @@ from telegram.ext import CallbackContext
 
 from commands.utils import bot
 
-from utils.db import check_in_blacklist, conn
+from db.operations import check_in_blacklist, conn
 
 
 def hate(update: Update, context: CallbackContext):
@@ -15,10 +15,10 @@ def hate(update: Update, context: CallbackContext):
 	new_members = message['new_chat_members']
 
 	for user in new_members:
-		if check_in_blacklist(conn, user['id']):
+		if check_in_blacklist(user['id']):
 			bot.send_photo(chat_id=chat_id, photo=open('hi.jpg', 'rb'))
 			bot.send_message(chat_id=chat_id, text='ЗДАРОВА ЛОХ')
 
-	if check_in_blacklist(conn, user_id):
+	if check_in_blacklist(user_id):
 		bot.send_photo(chat_id=chat_id, photo=open('hi.jpg', 'rb'))
 		update.message.reply_text('ЗДАРОВА ЛОХ')

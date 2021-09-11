@@ -24,9 +24,13 @@ class Blacklist(Base):
 	chat_id = Column(Integer)
 	message_id = Column(Integer)
 
-	def __repr__(self):
-		return f"User(id={self.id!r}, url={self.url!r}, chat_id={self.chat_id!r})"
 
+class Users(Base):
+	__tablename__ = 'users_table'
+
+	id = Column(Integer, primary_key=True)
+	role = Column(Enum(UserType))
+	url = Column(String(100))
 
 new_user = Blacklist(id=123, url="@lol", added_by=UserType.superadmin,
 					 chat_id=-11231, message_id=2)
@@ -39,7 +43,7 @@ new_user = Blacklist(id=123, url="@lol", added_by=UserType.superadmin,
 # )b
 
 
-# Base.metadata.create_all(engine)
+Base.metadata.create_all(engine)
 
 # print(stmt)
 
