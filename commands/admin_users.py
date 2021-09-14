@@ -15,15 +15,7 @@ from db.operations import (
     form_ids_list
 )
 
-
-added_admin_text = 'Пользователь теперь админ!'
-removed_admin_text = 'Пользователь больше не админ!'
-already_admin_text = 'Пользователь уже админ!'
-not_admin_text = 'Пользователь не админ!'
-
-
 no_permission = 'У вас недостаточно прав!'
-
 
 def append_user_admin(update: Update, context: CallbackContext) -> None:
 
@@ -43,7 +35,7 @@ def append_user_admin(update: Update, context: CallbackContext) -> None:
         result = insert_user(
             user=targer_id, url=target_url, role=UserType.admin)
         if result:
-            update.message.reply_text(added_admin_text)
+            update.message.reply_text('Пользователь теперь админ!')
     else:
         update.message.reply_text(no_permission)
 

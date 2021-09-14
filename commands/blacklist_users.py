@@ -29,12 +29,6 @@ check_text = """
 Пример: /check 88888888
 """
 
-added_to_blacklist_text = 'Пользователь добавлен в черный список!'
-removed_from_blacklist_text = 'Пользователь удален из черного списка!'
-already_in_blacklist_text = 'Пользователь уже находился в черном списке!'
-not_in_blackilist_text = 'Пользователя нет в черном списке!'
-in_blacklist_text = 'Пользователь в черном списке!'
-
 no_permission = 'У вас недостаточно прав!'
 
 
@@ -62,9 +56,9 @@ def append_user_blacklist(update: Update, context: CallbackContext) -> None:
                                      chat_type=message.type,
                                      chat_name=message.chat_name)
         if result:
-            update.message.reply_text(added_to_blacklist_text)
+            update.message.reply_text('Пользователь добавлен в черный список!')
         else:
-            update.message.reply_text(already_in_blacklist_text)
+            update.message.reply_text('Пользователь уже находился в черном списке!')
 
 
 def remove_user_blacklist(update: Update, context: CallbackContext) -> None:
@@ -102,4 +96,4 @@ def check_user_blacklist(update: Update, context: CallbackContext) -> None:
         if check_in_blacklist(targer_id):
             hello(update, targer_id)
         else:
-            update.message.reply_text(not_in_blackilist_text)
+            update.message.reply_text("Пользователь не в черном списке!")

@@ -18,8 +18,7 @@ def check_in_blacklist(user):
 
 
 def count_blacklist():
-    return len(list(session.execute(
-        select(Blacklist.id))))
+    return session.query(Blacklist.id).count()
 
 
 def insert_to_blacklist(user,
@@ -68,6 +67,9 @@ def select_from_blacklist(to_select, user):
 def check_in_users(user):
     q = session.query(Users).filter(Users.id == user)
     return session.query(q.exists()).scalar()
+
+def count_users_by_role(role):
+    return session.query(Users).filter(Users.role == role).count()
 
 
 def get_user_role(user):
