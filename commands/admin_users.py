@@ -5,7 +5,7 @@ from telegram.ext import CallbackContext
 
 from utils.instances import Message
 from utils.tools import if_all_digits
-from db.schemas import Blacklist, UserType
+from db.schemas import UserType
 from db.operations import (
     insert_user,
     remove_user,

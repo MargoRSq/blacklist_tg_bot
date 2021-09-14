@@ -1,8 +1,6 @@
-from sqlalchemy.orm import relationship
 import enum
 
 from sqlalchemy import Column, Integer, String, Enum, BigInteger
-from sqlalchemy.sql.elements import Null
 
 from db.db import engine, Base
 
@@ -38,20 +36,4 @@ class Users(Base):
     role = Column(Enum(UserType))
     url = Column(String(100))
 
-# new_user = Blacklist(id=123, url="@lol", added_by=UserType.superadmin,
-# 					 chat_id=-11231, message_id=2)
-
-
-# stmt = (
-#     insert(Blacklist).
-#     values(new_user.id, new_user.url, new_user.added_by,
-#            new_user.chat_id, new_user.message_id)
-# )b
-
-
 Base.metadata.create_all(engine)
-
-# print(stmt)
-
-# with engine.connect() as conn:
-#     result = conn.execute(stmt)

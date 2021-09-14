@@ -5,18 +5,16 @@ from telegram.ext import CallbackContext
 
 from utils.instances import Message
 from utils.tools import if_all_digits
+from db.schemas import Blacklist
 from db.operations import (
     check_in_blacklist,
     insert_to_blacklist,
     remove_from_blacklist,
-    count_blacklist,
     get_user_role,
-    select_addedby,
-    select_users_by_role,
-    select_chat_id,
-    select_message_id,
+    select_from_blacklist,
     form_ids_list
 )
+from commands.hater import hello
 
 add_text = """
 /add {user_id} {url} - Добавить или обновить ссылку на человека
@@ -84,7 +82,7 @@ def remove_user_blacklist(update: Update, context: CallbackContext) -> None:
             return update.message.reply_text("Пользователь не в черном списке")
 
         role = get_user_role(message.sender_id)
-        if role >= select_addedby(targer_id):
+        if role >= select_from_blacklist(Blacklist.added_by, targer_id):
             remove_from_blacklist(targer_id)
             update.message.reply_text("Пользователь удален из черного списка")
         else:
@@ -93,7 +91,6 @@ def remove_user_blacklist(update: Update, context: CallbackContext) -> None:
 
 def check_user_blacklist(update: Update, context: CallbackContext) -> None:
 
-    # chat_id = message['chat']['id']
     message = Message(update)
 
     if message.len == 1:
@@ -103,10 +100,6 @@ def check_user_blacklist(update: Update, context: CallbackContext) -> None:
         if not if_all_digits(targer_id):
             return update.message.reply_text("Некорректный ID")
         if check_in_blacklist(targer_id):
-            # blacklist_chat_id = select_chat_id(targer_id)
-            # blacklist_message_id = select_message_id(targer_id)
-            update.message.reply_text("Чел в черном списке!")
-            # message = bot.forward_message(
-            #     chat_id, blacklist_chat_id, blacklist_message_id)
+            hello(update, targer_id)
         else:
             update.message.reply_text(not_in_blackilist_text)
