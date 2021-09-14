@@ -27,13 +27,15 @@ def insert_to_blacklist(user,
                         added_by,
                         chat_id,
                         message_id,
-                        chat_type):
+                        chat_type,
+                        chat_name):
     if not check_in_blacklist(user):
         insert_blacklist = (
             insert(Blacklist).
             values(id=user, url=url,
                    added_by=added_by, chat_id=chat_id,
-                   message_id=message_id, chat_type=chat_type)
+                   message_id=message_id, chat_type=chat_type,
+                   chat_name=chat_name)
         )
         with engine.connect() as conn:
             conn.execute(insert_blacklist)
@@ -59,7 +61,7 @@ def select_addedby(user):
     )
     with engine.connect() as conn:
         results = conn.execute(select_user)
-        return results.fetchone()[0].value
+        return results.fetchone()[0]
 
 
 def select_chat_id(user):

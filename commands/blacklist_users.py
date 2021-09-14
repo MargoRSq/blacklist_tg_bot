@@ -15,7 +15,7 @@ from db.operations import (
     select_users_by_role,
     select_chat_id,
     select_message_id,
-    form_ids_list,
+    form_ids_list
 )
 
 add_text = """
@@ -61,7 +61,8 @@ def append_user_blacklist(update: Update, context: CallbackContext) -> None:
         result = insert_to_blacklist(targer_id, target_url,
                                      role, message.chat_id,
                                      message.message_id,
-                                     chat_type=message.type)
+                                     chat_type=message.type,
+                                     chat_name=message.chat_name)
         if result:
             update.message.reply_text(added_to_blacklist_text)
         else:

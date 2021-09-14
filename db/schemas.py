@@ -2,6 +2,7 @@ from sqlalchemy.orm import relationship
 import enum
 
 from sqlalchemy import Column, Integer, String, Enum, BigInteger
+from sqlalchemy.sql.elements import Null
 
 from db.db import engine, Base
 
@@ -27,6 +28,7 @@ class Blacklist(Base):
     chat_id = Column(BigInteger)
     message_id = Column(BigInteger)
     chat_type = Column(Enum(ChatType))
+    chat_name = Column(String(100))
 
 
 class Users(Base):

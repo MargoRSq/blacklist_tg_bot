@@ -21,5 +21,12 @@ class Message:
         self.chat_id = update['channel_post']['sender_chat']['id'] \
             if self.type == 'channel' else update['message']['chat']['id']
 
+        if self.type == 'channel':
+            self.chat_name = update['channel_post']['chat']['username']
+        elif self.type == 'private':
+            self.chat_name = '@' + update['message']['chat']['username']
+        elif self.type == 'group':
+            self.chat_name = update['message']['chat']['title']
+
         self.message_id = update['channel_post']['message_id'] \
             if self.type == 'channel' else update['message']['message_id']

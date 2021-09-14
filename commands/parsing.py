@@ -29,7 +29,8 @@ def try_add_to_db(message: Message):
                                         added_by='admin',
                                         chat_id=message.chat_id,
                                         message_id=message.message_id,
-                                        chat_type=message.type)
+                                        chat_type=message.type,
+                                        chat_name=message.chat_name)
 
 
 def load_old_ids(update: Update, context: CallbackContext):
