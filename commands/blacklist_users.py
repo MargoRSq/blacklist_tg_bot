@@ -3,17 +3,19 @@ import re
 from telegram import Update
 from telegram.ext import CallbackContext
 
-from commands.utils import get_message_text_array, form_permission, check_digit, bot
+from utils.instances import Message
+from utils.tools import if_all_digits
 from db.operations import (
-	check_in_blacklist,
-	insert_to_blacklist,
-	remove_from_blacklist,
-	count_blacklist,
-	get_user_role,
-	select_addedby,
-	select_users_by_role,
-	select_chat_id,
-	select_message_id
+    check_in_blacklist,
+    insert_to_blacklist,
+    remove_from_blacklist,
+    count_blacklist,
+    get_user_role,
+    select_addedby,
+    select_users_by_role,
+    select_chat_id,
+    select_message_id,
+    form_ids_list,
 )
 
 add_text = """
@@ -40,77 +42,70 @@ no_permission = 'У вас недостаточно прав!'
 
 def append_user_blacklist(update: Update, context: CallbackContext) -> None:
 
-	update_dict = update.to_dict()
-	message = update_dict['message']
-	text_array = get_message_text_array(message)
+    message = Message(update)
+    permissions_list = form_ids_list(['admin', 'superadmin'])
 
-	permissions_list = form_permission(['admin', 'superadmin'])
-	from_id = message['from']['id']
+    if message.len == 1 and message.sender_id in permissions_list:
+        update.message.reply_text(add_text)
+    elif message.len == 2 and message.sender_id in permissions_list:
+        update.message.reply_text("Введите ссылку на пользователя")
+    elif message.len == 3 and message.sender_id in permissions_list:
+        targer_id = message.text_array[1]
+        target_url = message.text_array[2]
+        if not re.findall(r'\@\w+', message.text):
+            return update.message.reply_text("@{username} не найден")
+        if not if_all_digits(targer_id):
+            return update.message.reply_text("Некорректный ID")
 
-	if len(text_array) == 1 and from_id in permissions_list:
-		update.message.reply_text(add_text)
-	elif len(text_array) == 2 and from_id in permissions_list:
-		update.message.reply_text("Введите ссылку на пользователя")
-	elif len(text_array) == 3 and from_id in permissions_list:
-		targer_id = text_array[1]
-		target_url = text_array[2]
-		if not re.findall(r'\@\w+', message['text']):
-			return update.message.reply_text("@{username} не найден")
-		if not check_digit(targer_id):
-			return update.message.reply_text("Некорректный ID")
-
-		role = get_user_role(from_id)
-		result = insert_to_blacklist(targer_id, target_url, role, 1, 1)
-		if result:
-			update.message.reply_text(added_to_blacklist_text)
-		else:
-			update.message.reply_text(already_in_blacklist_text)
+        role = get_user_role(message.sender_id)
+        result = insert_to_blacklist(targer_id, target_url,
+                                     role, message.chat_id,
+                                     message.message_id,
+                                     chat_type=message.type)
+        if result:
+            update.message.reply_text(added_to_blacklist_text)
+        else:
+            update.message.reply_text(already_in_blacklist_text)
 
 
 def remove_user_blacklist(update: Update, context: CallbackContext) -> None:
 
-	update_dict = update.to_dict()
-	message = update_dict['message']
-	text_array = get_message_text_array(message)
+    message = Message(update)
+    permissions_list = form_ids_list(['admin', 'superadmin'])
 
-	permissions_list = form_permission(['admin', 'superadmin'])
-	from_id = message['from']['id']
+    if message.len == 1 and message.sender_id in permissions_list:
+        update.message.reply_text(remove_text)
+    elif message.len == 2 and message.sender_id in permissions_list:
+        targer_id = message.text_array[1]
+        if not if_all_digits(targer_id):
+            return update.message.reply_text("Некорректный ID")
+        if not check_in_blacklist(targer_id):
+            return update.message.reply_text("Пользователь не в черном списке")
 
-	if len(text_array) == 1 and from_id in permissions_list:
-		update.message.reply_text(remove_text)
-	elif len(text_array) == 2 and from_id in permissions_list:
-		targer_id = text_array[1]
-		if not check_digit(targer_id):
-			return update.message.reply_text("Некорректный ID")
-		if not check_in_blacklist(targer_id):
-			return update.message.reply_text("Пользователь не в черном списке")
-
-		role = get_user_role(from_id)
-		if role >= select_addedby(targer_id):
-			remove_from_blacklist(targer_id)
-			update.message.reply_text("Пользователь удален из черного списка")
-		else:
-			update.message.reply_text(no_permission)
+        role = get_user_role(message.sender_id)
+        if role >= select_addedby(targer_id):
+            remove_from_blacklist(targer_id)
+            update.message.reply_text("Пользователь удален из черного списка")
+        else:
+            update.message.reply_text(no_permission)
 
 
 def check_user_blacklist(update: Update, context: CallbackContext) -> None:
 
-	update_dict = update.to_dict()
-	message = update_dict['message']
-	chat_id = message['chat']['id']
-	text_array = get_message_text_array(message)
+    # chat_id = message['chat']['id']
+    message = Message(update)
 
-	if len(text_array) == 1:
-		update.message.reply_text(check_text)
-	elif len(text_array) == 2:
-		targer_id = text_array[1]
-		if not check_digit(targer_id):
-			return update.message.reply_text("Некорректный ID")
-		if check_in_blacklist(targer_id):
-			blacklist_chat_id = select_chat_id(targer_id)
-			blacklist_message_id = select_message_id(targer_id)
-			update.message.reply_text("Чел в черном списке!")
-			message = bot.forward_message(
-				chat_id, blacklist_chat_id, blacklist_message_id)
-		else:
-			update.message.reply_text(not_in_blackilist_text)
+    if message.len == 1:
+        update.message.reply_text(check_text)
+    elif message.len == 2:
+        targer_id = message.text_array[1]
+        if not if_all_digits(targer_id):
+            return update.message.reply_text("Некорректный ID")
+        if check_in_blacklist(targer_id):
+            # blacklist_chat_id = select_chat_id(targer_id)
+            # blacklist_message_id = select_message_id(targer_id)
+            update.message.reply_text("Чел в черном списке!")
+            # message = bot.forward_message(
+            #     chat_id, blacklist_chat_id, blacklist_message_id)
+        else:
+            update.message.reply_text(not_in_blackilist_text)

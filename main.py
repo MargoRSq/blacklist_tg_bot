@@ -10,7 +10,6 @@ from commands.hater import hate
 from commands.parsing import load_old_ids, parse_ids
 from commands.start import start
 from commands.subs import mailing, sub
-from commands.db import create_db
 from utils.config import TOKEN
 
 
@@ -34,7 +33,6 @@ def main() -> None:
     dispatcher.add_handler(CommandHandler("sub", sub))
 
     dispatcher.add_handler(CommandHandler("parser", load_old_ids))
-    dispatcher.add_handler(CommandHandler("create_db", create_db))
 
     dispatcher.add_handler(MessageHandler(
         Filters.regex('(id|id:|ID)'), parse_ids))
