@@ -18,7 +18,7 @@ from commands.hater import hello
 
 add_text = """
 /add {user_id} {url} - Добавить или обновить ссылку на человека
-Пример: /add 88888888 https://www.t.me...
+Пример: /add 88888888 @trololo
 """
 remove_text = """
 /remove {user_id} - Удалить человека из базы данных
