@@ -1,26 +1,40 @@
 from telegram import Update
+from telegram.error import Unauthorized, BadRequest
 from telegram.ext import CallbackContext
 
 from utils.instances import Message
-from utils.tools import if_all_digits
+from utils.tools import if_all_digits, bot
 from db.schemas import Blacklist, ChatType
 from db.operations import (
+	form_ids_list,
 	check_in_blacklist,
 	check_state,
 	unset_state,
-	select_from_blacklist)
+	select_from_blacklist,
+	remove_user,
+	get_user_role)
 
 
 
 def check_blacklist_message(message: Message, update: Update):
-    targer_id = message.text_array[0]
-    if not if_all_digits(targer_id):
-        return update.message.reply_text("Некорректный ID")
-    if check_in_blacklist(targer_id):
-        hello(update, targer_id)
-    else:
-        update.message.reply_text("Пользователь не в черном списке!")
-    
+	targer_id = message.text_array[0]
+	if not if_all_digits(targer_id):
+		return update.message.reply_text("Некорректный ID")
+	if check_in_blacklist(targer_id):
+		hello(update, targer_id)
+	else:
+		update.message.reply_text("Пользователь не в черном списке!")
+
+
+def request_to_admins(message: Message, update: Update):
+	send_list = form_ids_list(['admin'])[:-1]
+	for user in send_list:
+		try:
+			text = message.text + \
+				f'\n from {message.sender_id} - {get_user_role(message.sender_id)}'
+			bot.send_message(chat_id=user, text=text)
+		except Unauthorized:
+			remove_user(user)
 
 
 def hello(update, user_id):
@@ -42,4 +56,7 @@ def hate(update: Update, context: CallbackContext):
 
 	if check_state(message.sender_id) == 1:
 		check_blacklist_message(message, update)
+		unset_state(message.sender_id)
+	if check_state(message.sender_id) == 2:
+		request_to_admins(message, update)
 		unset_state(message.sender_id)

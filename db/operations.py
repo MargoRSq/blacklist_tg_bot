@@ -7,7 +7,16 @@ from db.db import engine, session
 
 def check_state(user):
     q = session.query(StateSaver).filter(StateSaver.id == user)
-    return session.query(q.exists()).scalar()
+    if session.query(q.exists()).scalar():
+        select_state = (
+            select(StateSaver.state).
+            where(StateSaver.id == user)
+        )
+        with engine.connect() as conn:
+            result = conn.execute(select_state)
+        return result.fetchone()[0].value
+    else:
+        return 0
 
 def set_state(user, st):
     if not check_state(user):

@@ -61,8 +61,8 @@ def start(update: Update, context: CallbackContext) -> None:
 
 	role = get_user_role(user_id)
 	if role == "user":
-		update.message.reply_text(start_user)
+		update.message.reply_text(start_user, reply_markup=reply_markup)
 	elif role == "admin":
-		update.message.reply_text(start_admin)
+		update.message.reply_text(start_admin, reply_markup=reply_markup)
 	elif role == "superadmin":
 		update.message.reply_text(start_superadmin, reply_markup=reply_markup)

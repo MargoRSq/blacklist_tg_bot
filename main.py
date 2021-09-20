@@ -9,7 +9,7 @@ from commands.blacklist_users import (
 from commands.hater import hate
 from commands.parsing import load_old_ids, parse_ids
 from commands.start import start
-from commands.subs import mailing, sub
+from commands.subs import mailing, sub, request
 from utils.config import TOKEN
 
 
@@ -22,6 +22,7 @@ def main() -> None:
     dispatcher.add_handler(CommandHandler("start", start))
     dispatcher.add_handler(CommandHandler("help", start))
 
+
     dispatcher.add_handler(CommandHandler("add_admin", append_user_admin))
     dispatcher.add_handler(CommandHandler(
         "remove_admin", remove_user_admin))
@@ -31,12 +32,14 @@ def main() -> None:
     dispatcher.add_handler(CommandHandler("check", check_user_blacklist))
     dispatcher.add_handler(CommandHandler("mailing", mailing))
     dispatcher.add_handler(CommandHandler("sub", sub))
+    dispatcher.add_handler(CommandHandler("request", request))
 
     dispatcher.add_handler(CommandHandler("parser", load_old_ids))
 
     dispatcher.add_handler(MessageHandler(
         Filters.regex('(id|id:|ID)'), parse_ids))
     dispatcher.add_handler(MessageHandler(Filters.regex('.*'), hate))
+
 
     updater.start_polling()
 
