@@ -17,8 +17,13 @@ class ChatType(enum.Enum):
     private = 'private'
 
 class State(enum.Enum):
-    waiting4check = 1
+    waiting4add = 1
     waiting4request = 2
+    waiting4add = 3
+    waiting4remove = 4
+    waiting4mailing = 5
+    waiting4add_admin = 6
+
 
 class StateSaver(Base):
     __tablename__ = 'state_table'
@@ -46,4 +51,4 @@ class Users(Base):
     role = Column(Enum(UserType))
     url = Column(String(100))
 
-Base.metadata.create_all(engine)
+

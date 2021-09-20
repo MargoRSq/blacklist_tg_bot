@@ -40,7 +40,8 @@ def append_user_blacklist(update: Update, context: CallbackContext) -> None:
     permissions_list = form_ids_list(['admin', 'superadmin'])
 
     if message.len == 1 and message.sender_id in permissions_list:
-        update.message.reply_text(add_text)
+        update.message.reply_text('Введите id пользователя')
+        set_state(user=message.sender_id, st=State.waiting4add)
     elif message.len == 2 and message.sender_id in permissions_list:
         update.message.reply_text("Введите ссылку на пользователя")
     elif message.len == 3 and message.sender_id in permissions_list:
@@ -69,7 +70,8 @@ def remove_user_blacklist(update: Update, context: CallbackContext) -> None:
     permissions_list = form_ids_list(['admin', 'superadmin'])
 
     if message.len == 1 and message.sender_id in permissions_list:
-        update.message.reply_text(remove_text)
+        update.message.reply_text('Введите id пользователя')
+        set_state(user=message.sender_id, st=State.waiting4remove)
     elif message.len == 2 and message.sender_id in permissions_list:
         targer_id = message.text_array[1]
         if not if_all_digits(targer_id):

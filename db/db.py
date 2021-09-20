@@ -10,6 +10,8 @@ engine = create_engine(DATABASE_URL, echo=False)
 Base = declarative_base()
 metadata_obj = MetaData()
 
+Base.metadata.create_all(engine)
+
 Session = sessionmaker(bind=engine)
 
 session = Session()
