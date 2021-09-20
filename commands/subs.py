@@ -2,52 +2,48 @@ from telegram import Update
 from telegram.error import Unauthorized
 from telegram.ext import CallbackContext
 
-from commands.utils import bot, form_permission, admin, superadmin, user
-from utils.db import conn, count_blacklist, remove_user, select_users_by_role
+from utils.instances import Message
+from utils.tools import bot
+from db.operations import (count_blacklist, count_users_by_role,
+						remove_user,
+						set_state,
+						form_ids_list,
+						count_users_by_role)
+from db.schemas import State
 
 
 def mailing(update: Update, context: CallbackContext):
 
-    message_dict = update.to_dict()['message']
-    message = message_dict['text']
-    mailing_text = message[9:]
+	message = Message(update)
+	mailing_text = message.text[9:]
 
-    users_arrays = [select_users_by_role(conn, role)
-                    for role in ['user', 'admin']]
+	users_ids = form_ids_list(['user', 'admin'])
+	permissions = form_ids_list(['admin', 'superadmin'])
 
-    users_dicts = [
-        item for sublist in users_arrays for item in sublist]
-
-    users_ids = [user['id'] for user in users_dicts]
-
-    permissions = form_permission([admin, superadmin])
-    permissions_list = permissions['list']
-
-    from_id = message_dict['from']['id']
-
-    if from_id in permissions_list:
-
-        for user in users_ids:
-            try:
-                bot.send_message(chat_id=user, text=mailing_text)
-            except Unauthorized:
-                remove_user(conn, user)
+	if message.sender_id in permissions:
+		for user in users_ids:
+			try:
+				bot.send_message(chat_id=user, text=mailing_text)
+			except Unauthorized:
+				remove_user(user)
 
 
 def sub(update: Update, context: CallbackContext):
 
-    message_dict = update.to_dict()['message']
+	message = Message(update)
+	permissions = form_ids_list(['admin', 'superadmin'])
 
-    permissions = form_permission([admin, superadmin])
-    permissions_list = permissions['list']
+	if message.sender_id in permissions:
+		users = count_users_by_role('user')
+		admins = count_users_by_role('admin')
+		superadmins = count_users_by_role('superadmin')
+		blacklist = count_blacklist()
+		update.message.reply_text(
+			f'В черном списке: {blacklist}\nПользователей: {users}\nАдминов: {admins}\nСуперадминов: {superadmins}')
 
-    from_id = message_dict['from']['id']
+def request(update: Update, context: CallbackContext):
+	message = Message(update)
 
-    if from_id in permissions_list:
-
-        users = len(select_users_by_role(conn, user))
-        admins = len(select_users_by_role(conn, admin))
-        superadmins = len(select_users_by_role(conn, superadmin))
-        blacklist = count_blacklist(conn)
-        update.message.reply_text(
-            f'В черном списке: {blacklist}\nПользователей: {users}\nАдминов: {admins}\nСуперадминов: {superadmins}')
+	if message.len == 1:
+		update.message.reply_text('Введите сообщение, которое полетит админам!')
+		set_state(user=message.sender_id, st=State.waiting4request)
