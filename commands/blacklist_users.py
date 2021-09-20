@@ -5,14 +5,16 @@ from telegram.ext import CallbackContext
 
 from utils.instances import Message
 from utils.tools import if_all_digits
-from db.schemas import Blacklist
+from db.schemas import Blacklist, StateSaver, State
 from db.operations import (
     check_in_blacklist,
     insert_to_blacklist,
     remove_from_blacklist,
     get_user_role,
     select_from_blacklist,
-    form_ids_list
+    form_ids_list,
+    check_state,
+    set_state
 )
 from commands.hater import hello
 
@@ -88,7 +90,8 @@ def check_user_blacklist(update: Update, context: CallbackContext) -> None:
     message = Message(update)
 
     if message.len == 1:
-        update.message.reply_text(check_text)
+        update.message.reply_text('Введите id пользователя!')
+        set_state(user=message.sender_id, st=State.waiting4check)
     elif message.len == 2:
         targer_id = message.text_array[1]
         if not if_all_digits(targer_id):

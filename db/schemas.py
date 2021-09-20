@@ -16,6 +16,16 @@ class ChatType(enum.Enum):
     group = 'group'
     private = 'private'
 
+class State(enum.Enum):
+    waiting4check = 1
+    waiting4request = 2
+
+class StateSaver(Base):
+    __tablename__ = 'state_table'
+
+    id = Column(Integer, primary_key=True)
+    state = Column(Enum(State))
+
 
 class Blacklist(Base):
     __tablename__ = 'blacklist_table'

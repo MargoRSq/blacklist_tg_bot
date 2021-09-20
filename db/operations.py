@@ -1,7 +1,33 @@
 from sqlalchemy import select, insert, delete
 
-from db.schemas import Blacklist, Users
+from db.schemas import Blacklist, Users, StateSaver
 from db.db import engine, session
+
+
+
+def check_state(user):
+    q = session.query(StateSaver).filter(StateSaver.id == user)
+    return session.query(q.exists()).scalar()
+
+def set_state(user, st):
+    if not check_state(user):
+        insert_state = (
+            insert(StateSaver).
+            values(id=user, state=st))
+        with engine.connect() as conn:
+            conn.execute(insert_state)
+        return True
+    else:
+        return False
+
+def unset_state(user):
+    delete_state = (
+        delete(StateSaver).
+        where(StateSaver.id == user)
+    )
+    with engine.connect() as conn:
+        conn.execute(delete_state)
+    return True
 
 
 def form_ids_list(roles: list):
