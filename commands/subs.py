@@ -15,17 +15,12 @@ from db.schemas import State
 def mailing(update: Update, context: CallbackContext):
 
 	message = Message(update)
-	mailing_text = message.text[9:]
-
-	users_ids = form_ids_list(['user', 'admin'])
 	permissions = form_ids_list(['admin', 'superadmin'])
 
-	if message.sender_id in permissions:
-		for user in users_ids:
-			try:
-				bot.send_message(chat_id=user, text=mailing_text)
-			except Unauthorized:
-				remove_user(user)
+	if message.len == 1 and message.sender_id in permissions:
+		update.message.reply_text('Введите сообщение, которое полетит админам!')
+		set_state(user=message.sender_id, st=State.waiting4mailing)
+
 
 
 def sub(update: Update, context: CallbackContext):

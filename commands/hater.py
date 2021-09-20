@@ -6,7 +6,7 @@ from telegram.ext import CallbackContext
 
 from utils.instances import Message
 from utils.tools import if_all_digits, bot
-from db.schemas import Blacklist, ChatType
+from db.schemas import Blacklist, ChatType, State, UserType
 from db.operations import (
 	form_ids_list,
 	check_in_blacklist,
@@ -15,12 +15,14 @@ from db.operations import (
 	select_from_blacklist,
 	remove_user,
 	get_user_role,
-	insert_to_blacklist)
+	insert_to_blacklist,
+	remove_from_blacklist,
+	check_in_users,
+	insert_user)
 
 
 def add_blacklist_message(message: Message, update: Update):
 	permissions_list = form_ids_list(['admin', 'superadmin'])
-
 	if message.len == 1 and message.sender_id in permissions_list:
 		update.message.reply_text("Введите ссылку на пользователя")
 	elif message.len == 2 and message.sender_id in permissions_list:
@@ -42,6 +44,22 @@ def add_blacklist_message(message: Message, update: Update):
 		else:
 			update.message.reply_text('Пользователь уже находился в черном списке!')
 
+def remove_blacklist_message(message: Message, update: Update) -> None:
+	permissions_list = form_ids_list(['admin', 'superadmin'])
+
+	if message.len == 1 and message.sender_id in permissions_list:
+		targer_id = message.text_array[0]
+		if not if_all_digits(targer_id):
+			return update.message.reply_text("Некорректный ID")
+		if not check_in_blacklist(targer_id):
+			return update.message.reply_text("Пользователь не в черном списке")
+
+		role = get_user_role(message.sender_id)
+		if role >= select_from_blacklist(Blacklist.added_by, targer_id).value:
+			remove_from_blacklist(targer_id)
+			update.message.reply_text("Пользователь удален из черного списка")
+		else:
+			update.message.reply_text('Недостаточно прав!')
 
 def check_blacklist_message(message: Message, update: Update):
 	targer_id = message.text_array[0]
@@ -56,12 +74,50 @@ def check_blacklist_message(message: Message, update: Update):
 def request_to_admins(message: Message, update: Update):
 	send_list = form_ids_list(['admin'])[:-1]
 	for user in send_list:
-		try:
-			text = message.text + \
-				f'\n from {message.sender_id} - {get_user_role(message.sender_id)}'
-			bot.send_message(chat_id=user, text=text)
-		except Unauthorized:
-			remove_user(user)
+		if user != 0:
+			try:
+				text = message.text + \
+					f'\n from {message.sender_id} - {get_user_role(message.sender_id)}'
+				bot.send_message(chat_id=user, text=text)
+			except Unauthorized:
+				remove_user(user)
+
+
+def mailing_message(message: Message, update: Update):
+	users_ids = form_ids_list(['user', 'admin'])
+	for user in users_ids:
+		if user != 0:
+			try:
+				bot.send_message(chat_id=user, text=message.text)
+			except Unauthorized:
+				remove_user(user)
+
+def add_admin_message(message: Message, update: Update):
+	if message.len == 1:
+		update.message.reply_text("Введите ссылку на пользователя")
+	elif message.len == 2:
+		targer_id = message.text_array[0]
+		target_url = message.text_array[1]
+		if not re.findall(r'\@\w+', message.text):
+			return update.message.reply_text("@{username} не найден")
+		if not if_all_digits(targer_id):
+			return update.message.reply_text("Некорректный ID")
+		result = insert_user(
+			user=targer_id, url=target_url, role=UserType.admin)
+		if result:
+			update.message.reply_text('Пользователь теперь админ!')
+	
+def remove_admin_message(message: Message, update: Update):
+	targer_id = message.text_array[0]
+	if not if_all_digits(targer_id):
+		return update.message.reply_text("Некорректный ID")
+	if not check_in_users(targer_id):
+		return update.message.reply_text("Пользователь и так не админ")
+
+	role = get_user_role(message.sender_id)
+	if role >= UserType.superadmin.value:
+		remove_user(targer_id)
+		update.message.reply_text("Пользователь больше не админ!")
 
 
 
@@ -82,15 +138,21 @@ def hate(update: Update, context: CallbackContext):
 
 	if check_in_blacklist(message.sender_id):
 		hello(update, message.sender_id)
-	elif check_state(message.sender_id) == 1:
-		check_blacklist_message(message, update)
+		
+	if check_state(message.sender_id):
+		if check_state(message.sender_id) == State.waiting4check.value:
+			check_blacklist_message(message, update)
+		elif check_state(message.sender_id) == State.waiting4request.value:
+			request_to_admins(message, update)
+		elif check_state(message.sender_id) == State.waiting4add.value:
+			add_blacklist_message(message, update)
+		elif check_state(message.sender_id) == State.waiting4request.value:
+			remove_blacklist_message(message, update)
+		elif check_state(message.sender_id) == State.waiting4mailing.value:
+			mailing_message(message, update)
+		elif check_state(message.sender_id) == State.waiting4add_admin.value:
+			add_admin_message(message, update)
+		elif check_state(message.sender_id) == State.waiting4remove_admin.value:
+			remove_admin_message(message, update)
+		
 		unset_state(message.sender_id)
-	elif check_state(message.sender_id) == 2:
-		request_to_admins(message, update)
-		unset_state(message.sender_id)
-	elif check_state(message.sender_id) == 3:
-		add_blacklist_message(message, update)
-		unset_state(message.sender_id)
-	# elif check_state(message.sender_id) == 4:
-	# 	request_to_admins(message, update)
-	# 	unset_state(message.sender_id)

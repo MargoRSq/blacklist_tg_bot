@@ -15,14 +15,16 @@ class ChatType(enum.Enum):
     channel = 'channel'
     group = 'group'
     private = 'private'
+    supergroup = 'supergroup'
 
 class State(enum.Enum):
-    waiting4add = 1
+    waiting4check = 1
     waiting4request = 2
     waiting4add = 3
     waiting4remove = 4
     waiting4mailing = 5
     waiting4add_admin = 6
+    waiting4remove_admin = 7
 
 
 class StateSaver(Base):
@@ -51,4 +53,4 @@ class Users(Base):
     role = Column(Enum(UserType))
     url = Column(String(100))
 
-
+Base.metadata.create_all(engine)

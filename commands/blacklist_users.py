@@ -40,7 +40,7 @@ def append_user_blacklist(update: Update, context: CallbackContext) -> None:
     permissions_list = form_ids_list(['admin', 'superadmin'])
 
     if message.len == 1 and message.sender_id in permissions_list:
-        update.message.reply_text('Введите id пользователя')
+        update.message.reply_text("Введите id и username")
         set_state(user=message.sender_id, st=State.waiting4add)
     elif message.len == 2 and message.sender_id in permissions_list:
         update.message.reply_text("Введите ссылку на пользователя")
@@ -80,7 +80,7 @@ def remove_user_blacklist(update: Update, context: CallbackContext) -> None:
             return update.message.reply_text("Пользователь не в черном списке")
 
         role = get_user_role(message.sender_id)
-        if role >= select_from_blacklist(Blacklist.added_by, targer_id):
+        if role >= select_from_blacklist(Blacklist.added_by, targer_id).value:
             remove_from_blacklist(targer_id)
             update.message.reply_text("Пользователь удален из черного списка")
         else:
