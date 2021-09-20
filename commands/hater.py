@@ -1,7 +1,7 @@
 import re
 
 from telegram import Update
-from telegram.error import Unauthorized, BadRequest
+from telegram.error import Unauthorized
 from telegram.ext import CallbackContext
 
 from utils.instances import Message
@@ -45,9 +45,7 @@ def add_blacklist_message(message: Message, update: Update):
 			update.message.reply_text('Пользователь уже находился в черном списке!')
 
 def remove_blacklist_message(message: Message, update: Update) -> None:
-	permissions_list = form_ids_list(['admin', 'superadmin'])
-
-	if message.len == 1 and message.sender_id in permissions_list:
+	if message.len == 1:
 		targer_id = message.text_array[0]
 		if not if_all_digits(targer_id):
 			return update.message.reply_text("Некорректный ID")
@@ -121,7 +119,6 @@ def remove_admin_message(message: Message, update: Update):
 
 
 
-
 def hello(update, user_id):
 	message_id = select_from_blacklist(Blacklist.message_id, user_id)
 	chat_name = select_from_blacklist(Blacklist.chat_name, user_id)
@@ -146,7 +143,7 @@ def hate(update: Update, context: CallbackContext):
 			request_to_admins(message, update)
 		elif check_state(message.sender_id) == State.waiting4add.value:
 			add_blacklist_message(message, update)
-		elif check_state(message.sender_id) == State.waiting4request.value:
+		elif check_state(message.sender_id) == State.waiting4remove.value:
 			remove_blacklist_message(message, update)
 		elif check_state(message.sender_id) == State.waiting4mailing.value:
 			mailing_message(message, update)

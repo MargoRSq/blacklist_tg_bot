@@ -1,11 +1,8 @@
 from telegram import Update
-from telegram.error import Unauthorized
 from telegram.ext import CallbackContext
 
 from utils.instances import Message
-from utils.tools import bot
 from db.operations import (count_blacklist, count_users_by_role,
-						remove_user,
 						set_state,
 						form_ids_list,
 						count_users_by_role)

@@ -4,14 +4,8 @@ from telegram import Update
 from telegram.ext import CallbackContext
 
 from utils.instances import Message
-from utils.tools import if_all_digits
-from db.schemas import UserType, State
+from db.schemas import State
 from db.operations import (
-    insert_user,
-    remove_user,
-    get_user_role,
-    insert_user,
-    check_in_users,
     form_ids_list,
     set_state
 )

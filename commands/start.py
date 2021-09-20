@@ -1,5 +1,4 @@
-from sqlalchemy.sql.expression import text
-from telegram import Update, KeyboardButton, KeyboardButtonPollType, ReplyKeyboardMarkup
+from telegram import Update, ReplyKeyboardMarkup
 from telegram.ext import CallbackContext
 
 from db.operations import (insert_user,
@@ -8,44 +7,44 @@ from db.operations import (insert_user,
 
 start_superadmin = """Комманды:
 	/help - вся информация о командах
-	/check {user_id} - Проверить id на наличие в блэк листах
-	Пример: /check 88888888
+	/check - Проверить id на наличие в блэк листах
+	Пример: 88888888
 
-	/add {user_id} {url} - Добавить или обновить ссылку на человека
-	Пример: /add 88888888 @trololo
+	/add - Добавить или обновить ссылку на человека
+	Пример: 88888888 @trololo
 
-	/remove {user_id} - Удалить человека из базы данных
+	/remove - Удалить человека из базы данных
 	Пример: /remove 88888888
 
-	/mailing {message} - отправить все сообщения для юзеров из базы
+	/mailing - отправить все сообщения для юзеров из базы
 	/sub - количество подписчиков
-	/add_admin {user_id} добавить админа
-	/remove_admin {user_id} удалить админа
+	/add_admin - добавить админа
+	/remove_admin - удалить админа
 	/parser команда парсит все id в blacklist, которые упоминались в чате
-		"""
+"""
 
 start_admin = """Комманды:
 
 	/help - вся информация о командах
-	/check {user_id} - Проверить id на наличие в блэк листах
-	Пример: /check 88888888
+	/check - Проверить id на наличие в блэк листах
+	Пример: 88888888
 
-	/add {user_id} {url} - Добавить или обновить ссылку на человека
-	Пример: /add 88888888 @trololo
+	/add - Добавить или обновить ссылку на человека
+	Пример: 88888888 @trololo
 
-	/remove {user_id} - Удалить человека из базы данных
+	/remove - Удалить человека из базы данных
 	Пример: /remove 88888888
 
-	/mailing {message} - отправить все сообщения для юзеров из базы
+	/mailing - отправить все сообщения для юзеров из базы
 	/sub - количество подписчиков
-	"""
+"""
 
 start_user = """
 	Комманды:
 	/help - вся информация о командах
-	/check {user_id} - Проверить id на наличие в блэк листах
-	Пример: /check 88888888
-	"""
+	/check - Проверить id на наличие в блэк листах
+	Пример: 88888888
+"""
 
 
 user_keyboard = [['/check', '/request']]
@@ -61,7 +60,6 @@ superadmin_keyboard = [['/check', '/request'],
 					['/parser']]
 
 reply_markup = [ReplyKeyboardMarkup(kb) for kb in [user_keyboard, admin_keyboard, superadmin_keyboard]]
-
 
 
 def start(update: Update, context: CallbackContext) -> None:
