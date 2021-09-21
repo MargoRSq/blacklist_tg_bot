@@ -3,6 +3,7 @@ import re
 from telegram import Update
 from telegram.error import Unauthorized
 from telegram.ext import CallbackContext
+from telegram.files.document import Document
 
 from utils.instances import Message
 from utils.tools import if_all_digits, bot
@@ -70,15 +71,11 @@ def check_blacklist_message(message: Message, update: Update):
 
 
 def request_to_admins(message: Message, update: Update):
-	from pprint import pprint
-	pprint(update.to_dict())
 	send_list = form_ids_list(['admin'])[:-1]
 	for user in send_list:
 		if user != 0:
 			try:
-				text = message.text + \
-					f'\n from {message.sender_id} - {get_user_role(message.sender_id)}'
-				bot.send_message(chat_id=user, text=text)
+				bot.forward_message(chat_id=user, from_chat_id=message.chat_id, message_id=message.message_id)
 			except Unauthorized:
 				remove_user(user)
 

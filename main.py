@@ -38,7 +38,7 @@ def main() -> None:
 
     dispatcher.add_handler(MessageHandler(
         Filters.regex('(id|id:|ID)'), parse_ids))
-    dispatcher.add_handler(MessageHandler(Filters.regex('.*'), hate))
+    dispatcher.add_handler(MessageHandler(Filters.update, hate))
 
 
     updater.start_polling()
