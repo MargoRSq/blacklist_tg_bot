@@ -70,6 +70,8 @@ def check_blacklist_message(message: Message, update: Update):
 
 
 def request_to_admins(message: Message, update: Update):
+	from pprint import pprint
+	pprint(update.to_dict())
 	send_list = form_ids_list(['admin'])[:-1]
 	for user in send_list:
 		if user != 0:

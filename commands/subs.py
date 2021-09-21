@@ -31,7 +31,7 @@ def sub(update: Update, context: CallbackContext):
 		superadmins = count_users_by_role('superadmin')
 		blacklist = count_blacklist()
 		update.message.reply_text(
-			f'В черном списке: {blacklist}\nПользователей: {users}\nадминистраторов: {admins}\nСуперадминистраторов: {superadmins}')
+			f'В черном списке: {blacklist}\nПользователей: {users}\nАдминистраторов: {admins}\nСуперадминистраторов: {superadmins}')
 
 def request(update: Update, context: CallbackContext):
 	message = Message(update)
