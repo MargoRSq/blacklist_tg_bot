@@ -15,7 +15,7 @@ def mailing(update: Update, context: CallbackContext):
 	permissions = form_ids_list(['admin', 'superadmin'])
 
 	if message.len == 1 and message.sender_id in permissions:
-		update.message.reply_text('Введите сообщение, которое полетит админам!')
+		update.message.reply_text('Введите сообщение, которое рассмотрят администраторы!')
 		set_state(user=message.sender_id, st=State.waiting4mailing)
 
 
@@ -31,11 +31,11 @@ def sub(update: Update, context: CallbackContext):
 		superadmins = count_users_by_role('superadmin')
 		blacklist = count_blacklist()
 		update.message.reply_text(
-			f'В черном списке: {blacklist}\nПользователей: {users}\nАдминов: {admins}\nСуперадминов: {superadmins}')
+			f'В черном списке: {blacklist}\nПользователей: {users}\nадминистраторов: {admins}\nСуперадминистраторов: {superadmins}')
 
 def request(update: Update, context: CallbackContext):
 	message = Message(update)
 
 	if message.len == 1:
-		update.message.reply_text('Введите сообщение, которое полетит админам!')
+		update.message.reply_text('Введите сообщение, которое рассмотрят администраторы!')
 		set_state(user=message.sender_id, st=State.waiting4request)

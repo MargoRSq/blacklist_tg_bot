@@ -103,19 +103,19 @@ def add_admin_message(message: Message, update: Update):
 		result = insert_user(
 			user=targer_id, url=target_url, role=UserType.admin)
 		if result:
-			update.message.reply_text('Пользователь теперь админ!')
+			update.message.reply_text('Пользователь теперь администратор!')
 	
 def remove_admin_message(message: Message, update: Update):
 	targer_id = message.text_array[0]
 	if not if_all_digits(targer_id):
 		return update.message.reply_text("Некорректный ID")
 	if not check_in_users(targer_id):
-		return update.message.reply_text("Пользователь и так не админ")
+		return update.message.reply_text("Пользователь и так не администратор")
 
 	role = get_user_role(message.sender_id)
 	if role >= UserType.superadmin.value:
 		remove_user(targer_id)
-		update.message.reply_text("Пользователь больше не админ!")
+		update.message.reply_text("Пользователь больше не администратор!")
 
 
 
@@ -125,9 +125,9 @@ def hello(update, user_id):
 	chat_type = select_from_blacklist(Blacklist.chat_type, user_id)
 	if chat_type.value == ChatType.channel.value:
 		update.message.reply_text(
-			f"Внимание! Чел кидок!\nhttps://t.me/{chat_name}/{message_id}")
+			f"Это скамер!\nСсылка на блэк!! https://t.me/{chat_name}/{message_id}")
 	else:
-		update.message.reply_text('Внимание! Чел кидок!')
+		update.message.reply_text('Это скамер!\nДобавлен администратором')
 
 
 def hate(update: Update, context: CallbackContext):
